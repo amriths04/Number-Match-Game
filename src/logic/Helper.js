@@ -15,6 +15,36 @@ export const isNeighbor = (a, b, c, d) => {
   return false;
 };
 
+export const isLineClear = (board, r1, c1, r2, c2) => {
+  // must be same row or same column
+  if (r1 !== r2 && c1 !== c2) return false;
+
+  // same row
+  if (r1 === r2) {
+    const start = Math.min(c1, c2) + 1;
+    const end = Math.max(c1, c2);
+
+    for (let c = start; c < end; c++) {
+      if (board[r1][c] !== null) return false;
+    }
+    return true;
+  }
+
+  // same column
+  if (c1 === c2) {
+    const start = Math.min(r1, r2) + 1;
+    const end = Math.max(r1, r2);
+
+    for (let r = start; r < end; r++) {
+      if (board[r][c1] !== null) return false;
+    }
+    return true;
+  }
+
+  return false;
+};
+
+
 export const matchValidation = (a,b)=>{
     if(a+b===10){
         return true;

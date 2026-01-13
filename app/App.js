@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import styles from "./styles";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { isNeighbor, matchValidation, removeMatchedCells } from "../src/logic/Helper";
+import { isNeighbor, matchValidation, removeMatchedCells,isLineClear } from "../src/logic/Helper";
 import { countRemainingMatches,clearEmptyRowsAndShiftUp } from "../src/logic/Board";
 
 export default function App() {
@@ -14,9 +14,9 @@ export default function App() {
   const [secselectedCell, setSecSelectedCell] = useState(null);
   const [ismatchpair, setismatchPair] = useState(false);
   const [board, setBoard] = useState([
-    [5, 5, 3, 7, 2, 8, 4, 6, 9],
+    [8, 5, 5, 5, 2, 8, 4, 6, 9],
     [1, 5, 5, 9, 1, 8, 8, 3, 7],
-    [2, 8, 5, 5, 1, 9, 4, 6, 3],
+    [2, 8, 5, 5, 1, 9, 4, 6, 2],
   ]);
   const STATIC_ROW = [1, 9, 2, 8, 3, 7, 4, 6, 5];
 
@@ -36,7 +36,17 @@ export default function App() {
       const val1 = board[selectedCell.row][selectedCell.col];
       const val2 = board[row][col];
 
-      if (!isNeighbor(selectedCell.row, selectedCell.col, row, col)) {
+      const isAdj = isNeighbor(selectedCell.row, selectedCell.col, row, col);
+
+      const isClearLine = isLineClear(
+        board,
+        selectedCell.row,
+        selectedCell.col,
+        row,
+        col
+      );
+
+      if (!isAdj && !isClearLine) {
         setSelectedCell({ row, col });
         setSecSelectedCell(null);
         setismatchPair(false);
