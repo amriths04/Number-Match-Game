@@ -50,6 +50,17 @@ const styles = StyleSheet.create({
     flex: 1,
   },
 
+  addButton: {
+    marginTop: 20,
+    paddingVertical: 7,
+    paddingHorizontal: 18,
+    backgroundColor: "#4caf50",
+  },
+
+  addButtonText: {
+    color: "#000",
+    fontSize: 16,
+  },
 });
 
 export default styles;

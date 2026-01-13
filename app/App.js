@@ -36,6 +36,13 @@ export default function App() {
           </View>
         ))}
       </View>
+        
+      <TouchableOpacity style={styles.addButton}>
+        <Text style={styles.addButtonText}>+ ADD ROW</Text>
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.addButton}>
+        <Text style={styles.addButtonText}>HINT</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
