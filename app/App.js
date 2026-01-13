@@ -11,11 +11,10 @@ export default function App() {
 
   const [selectedCell, setSelectedCell] = useState(null);
   const [secselectedCell, setSecSelectedCell] = useState(null);
-  const [isvalidpair, setisvalidPair] = useState(false);
   const [ismatchpair, setismatchPair] = useState(false);
   const [board, setBoard] = useState([
-    [1, 5, 3, 7, 2, 8, 4, 6, 9],
-    [4, 6, 1, 9, 2, 8, 5, 3, 7],
+    [3, 5, 3, 7, 2, 8, 4, 6, 9],
+    [1, 6, 1, 9, 2, 8, 5, 3, 7],
     [2, 8, 5, 5, 1, 9, 4, 6, 3],
   ]);
 
@@ -23,10 +22,12 @@ export default function App() {
     if (selectedCell && selectedCell.row === row && selectedCell.col === col) {
       setSelectedCell(null);
       setSecSelectedCell(null);
+      setismatchPair(false);
       return;
     }
     if (!selectedCell) {
       setSelectedCell({ row, col });
+      setismatchPair(false);
       return;
     }
     if (!secselectedCell) {
@@ -39,24 +40,19 @@ export default function App() {
         row,
         col
       );
-      if (isNeighbourValid) {
-        setSecSelectedCell(second);
-        setisvalidPair(true);
-        if (matchValidation(val1, val2)) {
-          setismatchPair(true);
-        } else {
-          setismatchPair(false);
-        }
-      } else {
+      if (!isNeighbourValid) {
         setSelectedCell({ row, col });
         setSecSelectedCell(null);
-        setisvalidPair(false);
         setismatchPair(false);
+        return;
       }
+      setSecSelectedCell({ row, col });
+      setismatchPair(matchValidation(val1, val2));
       return;
     }
     setSelectedCell({ row, col });
     setSecSelectedCell(null);
+    setismatchPair(false);
   };
   return (
     <SafeAreaView style={styles.container}>
@@ -81,7 +77,7 @@ export default function App() {
                       (secselectedCell &&
                         secselectedCell.row === rowIndex &&
                         secselectedCell.col === colIndex)) &&
-                     (ismatchpair ? styles.validCell : styles.selectedCell)
+                      (ismatchpair ? styles.validCell : styles.selectedCell),
                   ]}
                   onPress={() => oncellpress(rowIndex, colIndex)}
                 >
