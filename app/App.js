@@ -4,6 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import styles from "./styles";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { isNeighbor, matchValidation, removeMatchedCells } from "./Helper";
+import { countRemainingMatches } from "./logic/Board";
 
 export default function App() {
   const [level, setLevel] = useState(1);
@@ -76,6 +77,9 @@ export default function App() {
       <View style={styles.header}>
         <Text style={styles.headerText}>Level {level}</Text>
         <Text style={styles.headerText}>Score: {score}</Text>
+        <Text style={styles.headerText}>
+        Remaining: {countRemainingMatches(board)}
+        </Text>
       </View>
 
       <View style={styles.board}>
