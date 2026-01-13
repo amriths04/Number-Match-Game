@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import styles from "./styles";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { isNeighbor, matchValidation } from "./Helper";
+import { isNeighbor, matchValidation, removeMatchedCells } from "./Helper";
 
 export default function App() {
   const [level, setLevel] = useState(1);
@@ -31,23 +31,38 @@ export default function App() {
       return;
     }
     if (!secselectedCell) {
-      const second = { row, col };
       const val1 = board[selectedCell.row][selectedCell.col];
       const val2 = board[row][col];
-      const isNeighbourValid = isNeighbor(
-        selectedCell.row,
-        selectedCell.col,
-        row,
-        col
-      );
-      if (!isNeighbourValid) {
+
+      if (!isNeighbor(selectedCell.row, selectedCell.col, row, col)) {
         setSelectedCell({ row, col });
         setSecSelectedCell(null);
         setismatchPair(false);
         return;
       }
-      setSecSelectedCell({ row, col });
-      setismatchPair(matchValidation(val1, val2));
+      const isMatch = matchValidation(val1, val2);
+      if (!isMatch) {
+        setSelectedCell({ row, col });
+        setSecSelectedCell(null);
+        setismatchPair(false);
+        return;
+      }
+      if (isMatch) {
+        const first = selectedCell;
+        const second = { row, col };
+
+        setSecSelectedCell(second);
+        setismatchPair(true);
+
+        setTimeout(() => {
+          setBoard((prev) => removeMatchedCells(prev, first, second));
+          setScore((prev) => prev + 1);
+          setSelectedCell(null);
+          setSecSelectedCell(null);
+          setismatchPair(false);
+        }, 300);
+      }
+
       return;
     }
     setSelectedCell({ row, col });
@@ -81,7 +96,9 @@ export default function App() {
                   ]}
                   onPress={() => oncellpress(rowIndex, colIndex)}
                 >
-                  <Text style={styles.cellText}>{cell}</Text>
+                  <Text style={styles.cellText}>
+                    {cell !== null ? cell : ""}
+                  </Text>
                 </TouchableOpacity>
               </View>
             ))}

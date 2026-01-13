@@ -25,3 +25,12 @@ export const matchValidation = (a,b)=>{
     }
     return false;
 }
+
+export const removeMatchedCells = (board, cell1, cell2) => {
+  const newBoard = board.map(row => [...row]);
+
+  newBoard[cell1.row][cell1.col] = null;
+  newBoard[cell2.row][cell2.col] = null;
+
+  return newBoard;
+};
