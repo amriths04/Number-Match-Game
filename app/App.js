@@ -4,7 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import styles from "./styles";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { isNeighbor, matchValidation, removeMatchedCells } from "./Helper";
-import { countRemainingMatches } from "./logic/Board";
+import { countRemainingMatches,clearEmptyRowsAndShiftUp } from "./logic/Board";
 
 export default function App() {
   const [level, setLevel] = useState(1);
@@ -14,8 +14,8 @@ export default function App() {
   const [secselectedCell, setSecSelectedCell] = useState(null);
   const [ismatchpair, setismatchPair] = useState(false);
   const [board, setBoard] = useState([
-    [3, 5, 3, 7, 2, 8, 4, 6, 9],
-    [1, 6, 1, 9, 2, 8, 5, 3, 7],
+    [5, 5, 3, 7, 2, 8, 4, 6, 9],
+    [1, 5, 5, 9, 1, 8, 8, 3, 7],
     [2, 8, 5, 5, 1, 9, 4, 6, 3],
   ]);
 
@@ -56,7 +56,12 @@ export default function App() {
         setismatchPair(true);
 
         setTimeout(() => {
-          setBoard((prev) => removeMatchedCells(prev, first, second));
+          setBoard((prev) => {
+            const afterMatch = removeMatchedCells(prev, first, second);
+            const shiftedBoard = clearEmptyRowsAndShiftUp(afterMatch);
+            const matches = countRemainingMatches(shiftedBoard);
+            return shiftedBoard;
+          });
           setScore((prev) => prev + 1);
           setSelectedCell(null);
           setSecSelectedCell(null);
@@ -78,7 +83,7 @@ export default function App() {
         <Text style={styles.headerText}>Level {level}</Text>
         <Text style={styles.headerText}>Score: {score}</Text>
         <Text style={styles.headerText}>
-        Remaining: {countRemainingMatches(board)}
+          Remaining: {countRemainingMatches(board)}
         </Text>
       </View>
 
