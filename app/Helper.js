@@ -14,3 +14,14 @@ export const isNeighbor = (a, b, c, d) => {
   }
   return false;
 };
+
+export const matchValidation = (a,b)=>{
+    if(a+b===10){
+        return true;
+    }
+    else if(a==b)
+    {
+        return true;
+    }
+    return false;
+}

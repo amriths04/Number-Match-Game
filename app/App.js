@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import styles from "./styles";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { isNeighbor, matchValidation } from "./Helper";
 
 export default function App() {
   const [level, setLevel] = useState(1);
@@ -10,6 +11,7 @@ export default function App() {
 
   const [selectedCell, setSelectedCell] = useState(null);
   const [secselectedCell, setSecSelectedCell] = useState(null);
+  const [isalidpair,setisvalidPair]=useState(false);
 
   const [board, setBoard] = useState([
     [1, 5, 3, 7, 2, 8, 4, 6, 9],
@@ -28,7 +30,17 @@ export default function App() {
       return;
     }
     if (!secselectedCell) {
-      setSecSelectedCell({ row, col });
+      const second = { row, col };
+      const isNeighbourValid = isNeighbor(
+        selectedCell.row,
+        selectedCell.col,
+        row,
+        col
+      );
+      if(isNeighbourValid){
+      setSecSelectedCell(second);
+      setisvalidPair(true);
+      }
       return;
     }
     setSelectedCell({ row, col });
