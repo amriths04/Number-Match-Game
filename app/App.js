@@ -11,8 +11,8 @@ export default function App() {
 
   const [selectedCell, setSelectedCell] = useState(null);
   const [secselectedCell, setSecSelectedCell] = useState(null);
-  const [isalidpair,setisvalidPair]=useState(false);
-
+  const [isvalidpair, setisvalidPair] = useState(false);
+  const [ismatchpair, setismatchPair] = useState(false);
   const [board, setBoard] = useState([
     [1, 5, 3, 7, 2, 8, 4, 6, 9],
     [4, 6, 1, 9, 2, 8, 5, 3, 7],
@@ -31,15 +31,27 @@ export default function App() {
     }
     if (!secselectedCell) {
       const second = { row, col };
+      const val1 = board[selectedCell.row][selectedCell.col];
+      const val2 = board[row][col];
       const isNeighbourValid = isNeighbor(
         selectedCell.row,
         selectedCell.col,
         row,
         col
       );
-      if(isNeighbourValid){
-      setSecSelectedCell(second);
-      setisvalidPair(true);
+      if (isNeighbourValid) {
+        setSecSelectedCell(second);
+        setisvalidPair(true);
+        if (matchValidation(val1, val2)) {
+          setismatchPair(true);
+        } else {
+          setismatchPair(false);
+        }
+      } else {
+        setSelectedCell({ row, col });
+        setSecSelectedCell(null);
+        setisvalidPair(false);
+        setismatchPair(false);
       }
       return;
     }
@@ -69,7 +81,7 @@ export default function App() {
                       (secselectedCell &&
                         secselectedCell.row === rowIndex &&
                         secselectedCell.col === colIndex)) &&
-                      styles.selectedCell,
+                     (ismatchpair ? styles.validCell : styles.selectedCell)
                   ]}
                   onPress={() => oncellpress(rowIndex, colIndex)}
                 >

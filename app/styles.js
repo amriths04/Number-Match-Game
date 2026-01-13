@@ -61,9 +61,13 @@ const styles = StyleSheet.create({
     color: "#000",
     fontSize: 16,
   },
-  
+
   selectedCell: {
   backgroundColor: "#ff9800",
+},
+
+validCell: {
+  backgroundColor: "#4caf50",
 },
 
 });
