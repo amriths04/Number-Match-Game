@@ -1,4 +1,4 @@
-import { matchValidation } from "../Helper";
+import { matchValidation } from "./Helper";
 
 export function countRemainingMatches(board) {
   let matchCount = 0;

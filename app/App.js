@@ -3,8 +3,8 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import styles from "./styles";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { isNeighbor, matchValidation, removeMatchedCells } from "./Helper";
-import { countRemainingMatches,clearEmptyRowsAndShiftUp } from "./logic/Board";
+import { isNeighbor, matchValidation, removeMatchedCells } from "../src/logic/Helper";
+import { countRemainingMatches,clearEmptyRowsAndShiftUp } from "../src/logic/Board";
 
 export default function App() {
   const [level, setLevel] = useState(1);
@@ -18,6 +18,7 @@ export default function App() {
     [1, 5, 5, 9, 1, 8, 8, 3, 7],
     [2, 8, 5, 5, 1, 9, 4, 6, 3],
   ]);
+  const STATIC_ROW = [1, 9, 2, 8, 3, 7, 4, 6, 5];
 
   const oncellpress = (row, col) => {
     if (selectedCell && selectedCell.row === row && selectedCell.col === col) {
@@ -75,6 +76,13 @@ export default function App() {
     setSecSelectedCell(null);
     setismatchPair(false);
   };
+
+  const handleAddRow = () => {
+  setBoard(prev => {
+    const newBoard = [...prev, [...STATIC_ROW]];
+    return newBoard;
+  });
+};
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
@@ -115,7 +123,7 @@ export default function App() {
         ))}
       </View>
 
-      <TouchableOpacity style={styles.addButton}>
+      <TouchableOpacity style={styles.addButton} onPress={handleAddRow}>
         <Text style={styles.addButtonText}>+ ADD ROW</Text>
       </TouchableOpacity>
       <TouchableOpacity style={styles.addButton}>
