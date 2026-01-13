@@ -9,6 +9,7 @@ export default function App() {
   const [score, setScore] = useState(0);
 
   const [selectedCell, setSelectedCell] = useState(null);
+  const [secselectedCell, setSecSelectedCell] = useState(null);
 
   const [board, setBoard] = useState([
     [1, 5, 3, 7, 2, 8, 4, 6, 9],
@@ -19,9 +20,19 @@ export default function App() {
   const oncellpress = (row, col) => {
     if (selectedCell && selectedCell.row === row && selectedCell.col === col) {
       setSelectedCell(null);
+      setSecSelectedCell(null);
+      return;
+    }
+    if (!selectedCell) {
+      setSelectedCell({ row, col });
+      return;
+    }
+    if (!secselectedCell) {
+      setSecSelectedCell({ row, col });
       return;
     }
     setSelectedCell({ row, col });
+    setSecSelectedCell(null);
   };
   return (
     <SafeAreaView style={styles.container}>
@@ -40,8 +51,12 @@ export default function App() {
                 <TouchableOpacity
                   style={[
                     styles.pressnumber,
-                    selectedCell?.row === rowIndex &&
-                      selectedCell?.col === colIndex &&
+                    ((selectedCell &&
+                      selectedCell.row === rowIndex &&
+                      selectedCell.col === colIndex) ||
+                      (secselectedCell &&
+                        secselectedCell.row === rowIndex &&
+                        secselectedCell.col === colIndex)) &&
                       styles.selectedCell,
                   ]}
                   onPress={() => oncellpress(rowIndex, colIndex)}
