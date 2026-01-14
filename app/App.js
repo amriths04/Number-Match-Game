@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import styles from "./styles";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { isNeighbor, matchValidation, removeMatchedCells,isLineClear } from "../src/logic/Helper";
+import { isNeighbor, matchValidation, removeMatchedCells,isLineClear,isDiagonalLineClear } from "../src/logic/Helper";
 import { countRemainingMatches,clearEmptyRowsAndShiftUp } from "../src/logic/Board";
 
 export default function App() {
@@ -46,7 +46,15 @@ export default function App() {
         col
       );
 
-      if (!isAdj && !isClearLine) {
+      const isClearDiagonal = isDiagonalLineClear(
+        board,
+        selectedCell.row,
+        selectedCell.col,
+        row,
+        col
+      );
+
+      if (!isAdj && !isClearLine && !isClearDiagonal) {
         setSelectedCell({ row, col });
         setSecSelectedCell(null);
         setismatchPair(false);
@@ -88,11 +96,11 @@ export default function App() {
   };
 
   const handleAddRow = () => {
-  setBoard(prev => {
-    const newBoard = [...prev, [...STATIC_ROW]];
-    return newBoard;
-  });
-};
+    setBoard((prev) => {
+      const newBoard = [...prev, [...STATIC_ROW]];
+      return newBoard;
+    });
+  };
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />

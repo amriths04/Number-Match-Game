@@ -16,10 +16,7 @@ export const isNeighbor = (a, b, c, d) => {
 };
 
 export const isLineClear = (board, r1, c1, r2, c2) => {
-  // must be same row or same column
   if (r1 !== r2 && c1 !== c2) return false;
-
-  // same row
   if (r1 === r2) {
     const start = Math.min(c1, c2) + 1;
     const end = Math.max(c1, c2);
@@ -29,8 +26,6 @@ export const isLineClear = (board, r1, c1, r2, c2) => {
     }
     return true;
   }
-
-  // same column
   if (c1 === c2) {
     const start = Math.min(r1, r2) + 1;
     const end = Math.max(r1, r2);
@@ -42,6 +37,25 @@ export const isLineClear = (board, r1, c1, r2, c2) => {
   }
 
   return false;
+};
+
+export const isDiagonalLineClear = (board, r1, c1, r2, c2) => {
+  const rowDiff = r2 - r1;
+  const colDiff = c2 - c1;
+  if (Math.abs(rowDiff) !== Math.abs(colDiff)) return false;
+
+  const rowStep = rowDiff > 0 ? 1 : -1;
+  const colStep = colDiff > 0 ? 1 : -1;
+
+  let r = r1 + rowStep;
+  let c = c1 + colStep;
+
+  while (r !== r2 && c !== c2) {
+    if (board[r][c] !== null) return false;
+    r += rowStep;
+    c += colStep;
+  }
+  return true;
 };
 
 
