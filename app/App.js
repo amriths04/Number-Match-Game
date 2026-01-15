@@ -4,7 +4,8 @@ import { StatusBar } from "expo-status-bar";
 import styles from "./styles";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { isNeighbor, matchValidation, removeMatchedCells,isLineClear,isDiagonalLineClear } from "../src/logic/Helper";
-import { countRemainingMatches,clearEmptyRowsAndShiftUp,generateAdaptiveRow } from "../src/logic/Board";
+import { countRemainingMatches,clearEmptyRowsAndShiftUp } from "../src/logic/Board";
+import { generateAdaptiveRow } from "../src/logic/generateAdaptiveRow";
 
 export default function App() {
   const [level, setLevel] = useState(1);
@@ -18,7 +19,17 @@ export default function App() {
     [1, 5, 5, 9, 1, 8, 8, 3, 7],
     [2, 8, 5, 5, 1, 9, 4, 6, 2],
   ]);
-//   const STATIC_ROW = [1, 9, 2, 8, 3, 7, 4, 6, 5];
+  //   const STATIC_ROW = [1, 9, 2, 8, 3, 7, 4, 6, 5];
+  const LEVEL_MIN = 1;
+  const LEVEL_MAX = 11;
+
+  const handleLevelUp = () => {
+    setLevel((prev) => Math.min(prev + 1, LEVEL_MAX));
+  };
+
+  const handleLevelDown = () => {
+    setLevel((prev) => Math.max(prev - 1, LEVEL_MIN));
+  };
 
   const oncellpress = (row, col) => {
     if (selectedCell && selectedCell.row === row && selectedCell.col === col) {
@@ -106,7 +117,20 @@ export default function App() {
       <StatusBar style="light" />
 
       <View style={styles.header}>
-        <Text style={styles.headerText}>Level {level}</Text>
+        <View style={styles.levelControls}>
+          <TouchableOpacity
+            onPress={handleLevelDown}
+            style={styles.levelButton}
+          >
+            <Text style={styles.levelButtonText}>−</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.levelText}>Level {level}</Text>
+
+          <TouchableOpacity onPress={handleLevelUp} style={styles.levelButton}>
+            <Text style={styles.levelButtonText}>+</Text>
+          </TouchableOpacity>
+        </View>
         <Text style={styles.headerText}>Score: {score}</Text>
         <Text style={styles.headerText}>
           Remaining: {countRemainingMatches(board)}

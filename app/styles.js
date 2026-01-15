@@ -63,13 +63,38 @@ const styles = StyleSheet.create({
   },
 
   selectedCell: {
-  backgroundColor: "#ff9800",
-},
+    backgroundColor: "#ff9800",
+  },
 
-validCell: {
-  backgroundColor: "#4caf50",
-},
+  validCell: {
+    backgroundColor: "#4caf50",
+  },
+  levelControls: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 8,
+  },
 
+  levelButton: {
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+    backgroundColor: "#333",
+    borderRadius: 6,
+    marginHorizontal: 10,
+  },
+
+  levelButtonText: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+
+  levelText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+  },
 });
 
 export default styles;
