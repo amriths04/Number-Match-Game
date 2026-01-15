@@ -24,9 +24,10 @@ const styles = StyleSheet.create({
   },
 
   board: {
-    backgroundColor: "#1e1e1e",
+    backgroundColor: "#d0d741",
     padding: 8,
     marginTop: 10,
+    height: 400,
   },
 
   row: {
