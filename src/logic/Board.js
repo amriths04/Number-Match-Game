@@ -1,17 +1,18 @@
 import { matchValidation } from "./Helper";
 import { LEVEL_CONFIG } from "./levels";
 
-const COLS = 9;
 const ROWS = 3;
+const COLS = 9;
+
 const rand = (min, max) =>
   Math.floor(Math.random() * (max - min + 1)) + min;
 
 export const generateInitialBoard = (level) => {
   const cfg = LEVEL_CONFIG[level] || LEVEL_CONFIG[1];
-  const { ratios } = cfg;
+  const ratios = cfg?.ratios || { easy: 0.5, medium: 0.3, hard: 0.2 };
 
   const board = Array.from({ length: ROWS }, () =>
-    Array(COLS).fill(null)
+    Array.from({ length: COLS }, () => null)
   );
 
   const guaranteedMatches =
@@ -21,12 +22,15 @@ export const generateInitialBoard = (level) => {
     level <= 8 ? 2 : 1;
 
   let placed = 0;
+  let safety = 0;
 
-  while (placed < guaranteedMatches) {
+  while (placed < guaranteedMatches && safety < 100) {
+    safety++;
+
     const r = rand(0, ROWS - 1);
     const c = rand(0, COLS - 2);
 
-    if (board[r][c] !== null || board[r][c + 1] !== null) continue;
+    if (board[r][c] != null || board[r][c + 1] != null) continue;
 
     const roll = Math.random();
 
@@ -47,8 +51,9 @@ export const generateInitialBoard = (level) => {
 
   for (let r = 0; r < ROWS; r++) {
     for (let c = 0; c < COLS; c++) {
-      if (board[r][c] !== null) continue;
-      board[r][c] = rand(1, 9);
+      if (board[r][c] == null) {
+        board[r][c] = rand(1, 9);
+      }
     }
   }
 
@@ -56,28 +61,32 @@ export const generateInitialBoard = (level) => {
 };
 
 export function countRemainingMatches(board) {
+  if (!board || board.length === 0 || !board[0]) return 0;
   let matchCount = 0;
   board = clearEmptyRowsAndShiftUp(board);
+  if (board.length === 0 || !board[0]) return 0;
   const rows = board.length;
   const cols = board[0].length;
 
-  const directions = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+  const directions = [
+    [-1,-1],[-1,0],[-1,1],
+    [0,-1],[0,1],
+    [1,-1],[1,0],[1,1]
+  ];
 
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const current = board[r][c];
-      if (current === null) continue;
+      if (current == null) continue;
 
-      for (let d = 0; d < directions.length; d++) {
-        const newRow = r + directions[d][0];
-        const newCol = c + directions[d][1];
+      for (const [dr, dc] of directions) {
+        const nr = r + dr;
+        const nc = c + dc;
 
-        if (newRow < 0 || newRow >= rows || newCol < 0 || newCol >= cols) {
-          continue;
-        }
+        if (nr < 0 || nr >= rows || nc < 0 || nc >= cols) continue;
 
-        const neighbor = board[newRow][newCol];
-        if (neighbor === null) continue;
+        const neighbor = board[nr][nc];
+        if (neighbor == null) continue;
 
         if (matchValidation(current, neighbor)) {
           matchCount++;
@@ -89,21 +98,21 @@ export function countRemainingMatches(board) {
 }
 
 export const clearEmptyRowsAndShiftUp = (board) => {
-  const cols = board[0]?.length || 0;
+  if (!board || board.length === 0 || !board[0]) return [];
+
+  const cols = board[0].length;
   const remainingRows = [];
   for (let r = 0; r < board.length; r++) {
     let isEmptyRow = true;
 
     for (let c = 0; c < cols; c++) {
-      if (board[r][c] !== null) {
+      if (board[r][c] != null) {
         isEmptyRow = false;
         break;
       }
     }
 
-    if (!isEmptyRow) {
-      remainingRows.push(board[r]);
-    }
+    if (!isEmptyRow) remainingRows.push(board[r]);
   }
   return remainingRows;
 };

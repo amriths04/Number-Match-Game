@@ -9,26 +9,43 @@ import { generateAdaptiveRow } from "../src/logic/generateAdaptiveRow";
 import { LEVEL_CONFIG } from "../src/logic/levels";
 import { analyzeBoardState } from "../src/logic/AnalyzeBoard";
 
-
 export default function App() {
   const [level, setLevel] = useState(1);
   const [score, setScore] = useState(0);
+  const [hasStarted, setHasStarted] = useState(false);
 
   const [selectedCell, setSelectedCell] = useState(null);
   const [secselectedCell, setSecSelectedCell] = useState(null);
   const [ismatchpair, setismatchPair] = useState(false);
-  const [board, setBoard] = useState(() =>
-  generateInitialBoard(level)
-);
+  const [board, setBoard] = useState([]);
+  const handleStartGame = () => {
+    setScore(0);
+    setSelectedCell(null);
+    setSecSelectedCell(null);
+    setismatchPair(false);
+    setBoard(generateInitialBoard(level));
+    setHasStarted(true);
+  };
+
   //   const STATIC_ROW = [1, 9, 2, 8, 3, 7, 4, 6, 5];
   const LEVEL_MIN = 1;
   const LEVEL_MAX = 11;
 
   const levelCfg = LEVEL_CONFIG[level];
-  const boardStats = analyzeBoardState(board);
-  const constrainedCount = Object.values(boardStats.choiceMap || {})
-  .filter(v => v === 1).length;
+  const boardStats =
+    board.length > 0
+      ? analyzeBoardState(board)
+      : {
+          remainingMatches: 0,
+          possiblePairs: 0,
+          matchDensity: 0,
+          frequencyMap: {},
+          lonelyNumbers: [],
+        };
 
+  const constrainedCount = Object.values(boardStats.choiceMap || {}).filter(
+    (v) => v === 1
+  ).length;
 
   const handleLevelUp = () => {
     setLevel((prev) => Math.min(prev + 1, LEVEL_MAX));
@@ -119,97 +136,171 @@ export default function App() {
       return [...prev, newRow];
     });
   };
+  const handleEndGame = () => {
+    setHasStarted(false);
+    setBoard([]);
+    setScore(0);
+    setSelectedCell(null);
+    setSecSelectedCell(null);
+    setismatchPair(false);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
 
-    <View style={{ padding: 10, backgroundColor: "#111", marginBottom: 8 }}>
-  <Text style={{ color: "#0f0", fontSize: 12 }}>
-    Target Density: {levelCfg.targetMatchDensity}
-  </Text>
-  <Text style={{ color: "#0f0", fontSize: 12 }}>
-    Ratios → E:{levelCfg.ratios.easy} M:{levelCfg.ratios.medium} H:{levelCfg.ratios.hard}
-  </Text>
-  <Text style={{ color: "#0f0", fontSize: 12 }}>
-    Rescue Threshold: {levelCfg.rescueThreshold}
-  </Text>
-  <Text style={{ color: "#0f0", fontSize: 12 }}>
-    Relief Level: {levelCfg.relief ? "YES" : "NO"}
-  </Text>
+      {/* START SCREEN */}
+      {!hasStarted && (
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <Text style={{ color: "#fff", fontSize: 22, marginBottom: 20 }}>
+            Choose Level
+          </Text>
 
-  <Text style={{ color: "#fff", fontSize: 12, marginTop: 6 }}>
-    Remaining Matches: {boardStats.remainingMatches}
-  </Text>
-  <Text style={{ color: "#fff", fontSize: 12 }}>
-    Match Density: {boardStats.matchDensity.toFixed(3)}
-  </Text>
-  <Text style={{ color: "#fff", fontSize: 12 }}>
-    Possible Pairs: {boardStats.possiblePairs}
-  </Text>
-  <Text style={{ color: "#ff0", fontSize: 12 }}>
-    Constrained Numbers: {constrainedCount}
-  </Text>
-</View>
+          <View style={styles.levelControls}>
+            <TouchableOpacity
+              onPress={handleLevelDown}
+              style={styles.levelButton}
+            >
+              <Text style={styles.levelButtonText}>−</Text>
+            </TouchableOpacity>
 
-      <View style={styles.header}>
-        <View style={styles.levelControls}>
+            <Text style={styles.levelText}>Level {level}</Text>
+
+            <TouchableOpacity
+              onPress={handleLevelUp}
+              style={styles.levelButton}
+            >
+              <Text style={styles.levelButtonText}>+</Text>
+            </TouchableOpacity>
+          </View>
+
           <TouchableOpacity
-            onPress={handleLevelDown}
-            style={styles.levelButton}
+            style={[styles.addButton, { marginTop: 30 }]}
+            onPress={handleStartGame}
           >
-            <Text style={styles.levelButtonText}>−</Text>
-          </TouchableOpacity>
-
-          <Text style={styles.levelText}>Level {level}</Text>
-
-          <TouchableOpacity onPress={handleLevelUp} style={styles.levelButton}>
-            <Text style={styles.levelButtonText}>+</Text>
+            <Text style={styles.addButtonText}>START</Text>
           </TouchableOpacity>
         </View>
-        <Text style={styles.headerText}>Score: {score}</Text>
-        <Text style={styles.headerText}>
-          Remaining: {countRemainingMatches(board)}
-        </Text>
-      </View>
+      )}
 
-      <ScrollView
-  style={styles.board}
-  contentContainerStyle={{ paddingBottom: 20 }}
-  showsVerticalScrollIndicator={true}
->
-        {board.map((row, rowIndex) => (
-          <View key={rowIndex} style={styles.row}>
-            {row.map((cell, colIndex) => (
-              <View key={colIndex} style={styles.cell}>
-                <TouchableOpacity
-                  style={[
-                    styles.pressnumber,
-                    ((selectedCell &&
-                      selectedCell.row === rowIndex &&
-                      selectedCell.col === colIndex) ||
-                      (secselectedCell &&
-                        secselectedCell.row === rowIndex &&
-                        secselectedCell.col === colIndex)) &&
-                      (ismatchpair ? styles.validCell : styles.selectedCell),
-                  ]}
-                  onPress={() => oncellpress(rowIndex, colIndex)}
-                >
-                  <Text style={styles.cellText}>
-                    {cell !== null ? cell : ""}
-                  </Text>
-                </TouchableOpacity>
+      {/* GAME UI */}
+      {hasStarted && (
+        <>
+          {/* DEBUG */}
+          <View
+            style={{ padding: 10, backgroundColor: "#111", marginBottom: 8 }}
+          >
+            <Text style={{ color: "#0f0", fontSize: 12 }}>
+              Target Density: {levelCfg.targetMatchDensity}
+            </Text>
+
+            <Text style={{ color: "#0f0", fontSize: 12 }}>
+              Ratios → E:{levelCfg.ratios.easy} M:{levelCfg.ratios.medium} H:
+              {levelCfg.ratios.hard}
+            </Text>
+
+            <Text style={{ color: "#0f0", fontSize: 12 }}>
+              Rescue Threshold: {levelCfg.rescueThreshold}
+            </Text>
+
+            <Text style={{ color: "#0f0", fontSize: 12 }}>
+              Relief Level: {levelCfg.relief ? "YES" : "NO"}
+            </Text>
+
+            <Text style={{ color: "#fff", fontSize: 12, marginTop: 6 }}>
+              Remaining Matches: {boardStats.remainingMatches}
+            </Text>
+
+            <Text style={{ color: "#fff", fontSize: 12 }}>
+              Match Density: {boardStats.matchDensity.toFixed(3)}
+            </Text>
+
+            <Text style={{ color: "#fff", fontSize: 12 }}>
+              Possible Pairs: {boardStats.possiblePairs}
+            </Text>
+
+            <Text style={{ color: "#ff0", fontSize: 12 }}>
+              Constrained Numbers: {constrainedCount}
+            </Text>
+          </View>
+
+          {/* HEADER */}
+          <View style={styles.header}>
+            <View style={styles.levelControls}>
+              <TouchableOpacity
+                onPress={handleLevelDown}
+                style={styles.levelButton}
+              >
+                <Text style={styles.levelButtonText}>−</Text>
+              </TouchableOpacity>
+
+              <Text style={styles.levelText}>Level {level}</Text>
+
+              <TouchableOpacity
+                onPress={handleLevelUp}
+                style={styles.levelButton}
+              >
+                <Text style={styles.levelButtonText}>+</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.headerText}>Score: {score}</Text>
+          </View>
+
+          {/* BOARD */}
+          <ScrollView
+            style={styles.board}
+            contentContainerStyle={{ paddingBottom: 20 }}
+            showsVerticalScrollIndicator
+          >
+            {board.map((row, r) => (
+              <View key={r} style={styles.row}>
+                {row.map((cell, c) => (
+                  <View key={c} style={styles.cell}>
+                    <TouchableOpacity
+                      style={[
+                        styles.pressnumber,
+                        selectedCell &&
+                          selectedCell.row === r &&
+                          selectedCell.col === c &&
+                          (ismatchpair
+                            ? styles.validCell
+                            : styles.selectedCell),
+                        secselectedCell &&
+                          secselectedCell.row === r &&
+                          secselectedCell.col === c &&
+                          (ismatchpair
+                            ? styles.validCell
+                            : styles.selectedCell),
+                      ]}
+                      onPress={() => oncellpress(r, c)}
+                    >
+                      <Text style={styles.cellText}>{cell}</Text>
+                    </TouchableOpacity>
+                  </View>
+                ))}
               </View>
             ))}
-          </View>
-        ))}
-      </ScrollView>
+          </ScrollView>
 
-      <TouchableOpacity style={styles.addButton} onPress={handleAddRow}>
-        <Text style={styles.addButtonText}>+ ADD ROW</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.addButton}>
-        <Text style={styles.addButtonText}>HINT</Text>
-      </TouchableOpacity>
+          {/* ACTIONS */}
+          <TouchableOpacity style={styles.addButton} onPress={handleAddRow}>
+            <Text style={styles.addButtonText}>+ ADD ROW</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.addButton}>
+            <Text style={styles.addButtonText}>HINT</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.addButton, { backgroundColor: "#8b0000" }]}
+            onPress={handleEndGame}
+          >
+            <Text style={styles.addButtonText}>END GAME</Text>
+          </TouchableOpacity>
+        </>
+      )}
     </SafeAreaView>
   );
 }
