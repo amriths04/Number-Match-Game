@@ -1,7 +1,6 @@
 import { LEVEL_CONFIG } from "./levels";
 import { analyzeBoardState } from "./AnalyzeBoard";
 
-
 const weightedPick = (weights) => {
   const total = Object.values(weights).reduce((a, b) => a + b, 0);
   let r = Math.random() * total;
@@ -14,7 +13,6 @@ const weightedPick = (weights) => {
 
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
-
 export const generateAdaptiveRow = (board, level) => {
   const cfg = LEVEL_CONFIG[level] || LEVEL_CONFIG[1];
   const { ratios, targetMatchDensity, rescueThreshold } = cfg;
@@ -24,11 +22,11 @@ export const generateAdaptiveRow = (board, level) => {
     remainingMatches,
     frequencyMap,
     lonelyNumbers,
+    choiceMap
   } = analyzeBoardState(board);
 
   const cols = board[0].length;
   const numbers = Object.keys(frequencyMap).map(Number);
-
 
   let intent = "neutral";
 
@@ -40,10 +38,9 @@ export const generateAdaptiveRow = (board, level) => {
     else if (delta < -0.08) intent = "disrupt";
   }
 
-
-  const easy = [];    // frequent → visible
-  const medium = [];  // single → far same / adj sum
-  const hard = [];    // lonely / decoys
+  const easy = [];
+  const medium = [];
+  const hard = [];
 
   numbers.forEach((n) => {
     const f = frequencyMap[n];
@@ -57,50 +54,49 @@ export const generateAdaptiveRow = (board, level) => {
   if (medium.length === 0) medium.push(...easy);
   if (hard.length === 0) hard.push(...medium);
 
+  const constrained = Object.keys(choiceMap || {})
+    .filter(n => choiceMap[n] === 1)
+    .map(Number);
+
+  if (constrained.length === 0) constrained.push(...medium);
 
   const row = [];
 
   for (let i = 0; i < cols; i++) {
     let bucket = weightedPick(ratios);
 
-    // Intent bias
-    if (intent === "help" && Math.random() < 0.6) bucket = "easy";
-    if (intent === "disrupt" && Math.random() < 0.6) bucket = "hard";
+    if (intent === "help" && level <= 5 && Math.random() < 0.6) {
+      bucket = "easy";
+    }
+
+    if (intent === "disrupt" && level >= 7 && Math.random() < 0.6) {
+      bucket = "hard";
+    }
 
     let value;
 
-    /* EASY */
     if (bucket === "easy") {
       value = pick(easy);
     }
-
-    /* MEDIUM */
     else if (bucket === "medium") {
       if (Math.random() < 0.5) {
-        // far SAME
         value = pick(medium);
       } else {
-        // adjacent SUM=10 candidate
         const sum = numbers.filter(n => numbers.includes(10 - n));
         value = sum.length ? pick(sum) : pick(medium);
       }
     }
-
-    /* HARD (worst cases) */
     else {
       const roll = Math.random();
 
       if (roll < 0.45) {
-        // FAR SUM = 10 (hardest)
-        const sum = numbers.filter(n => numbers.includes(10 - n));
-        value = sum.length ? pick(sum) : pick(hard);
+        const sum = constrained.filter(n => numbers.includes(10 - n));
+        value = sum.length ? pick(sum) : pick(constrained);
       }
       else if (roll < 0.75) {
-        // FAR SAME (diagonal / wrap potential)
-        value = pick(medium);
+        value = pick(constrained);
       }
       else {
-        // DECOY NOISE
         value = pick(hard);
       }
     }
@@ -108,6 +104,5 @@ export const generateAdaptiveRow = (board, level) => {
     row.push(value);
   }
 
-  console.log("LEVEL", level, "INTENT", intent, "ROW", row);
   return row;
 };
