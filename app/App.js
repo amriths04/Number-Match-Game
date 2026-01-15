@@ -4,7 +4,7 @@ import { StatusBar } from "expo-status-bar";
 import styles from "./styles";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { isNeighbor, matchValidation, removeMatchedCells,isLineClear,isDiagonalLineClear } from "../src/logic/Helper";
-import { countRemainingMatches,clearEmptyRowsAndShiftUp } from "../src/logic/Board";
+import { countRemainingMatches,clearEmptyRowsAndShiftUp,generateInitialBoard } from "../src/logic/Board";
 import { generateAdaptiveRow } from "../src/logic/generateAdaptiveRow";
 import { LEVEL_CONFIG } from "../src/logic/levels";
 import { analyzeBoardState } from "../src/logic/AnalyzeBoard";
@@ -17,11 +17,9 @@ export default function App() {
   const [selectedCell, setSelectedCell] = useState(null);
   const [secselectedCell, setSecSelectedCell] = useState(null);
   const [ismatchpair, setismatchPair] = useState(false);
-  const [board, setBoard] = useState([
-    [8, 5, 5, 5, 2, 8, 4, 6, 9],
-    [1, 5, 5, 9, 1, 8, 8, 3, 7],
-    [2, 8, 5, 5, 1, 9, 4, 6, 2],
-  ]);
+  const [board, setBoard] = useState(() =>
+  generateInitialBoard(level)
+);
   //   const STATIC_ROW = [1, 9, 2, 8, 3, 7, 4, 6, 5];
   const LEVEL_MIN = 1;
   const LEVEL_MAX = 11;
