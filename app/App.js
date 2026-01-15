@@ -6,6 +6,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { isNeighbor, matchValidation, removeMatchedCells,isLineClear,isDiagonalLineClear } from "../src/logic/Helper";
 import { countRemainingMatches,clearEmptyRowsAndShiftUp } from "../src/logic/Board";
 import { generateAdaptiveRow } from "../src/logic/generateAdaptiveRow";
+import { LEVEL_CONFIG } from "../src/logic/levels";
+import { analyzeBoardState } from "../src/logic/AnalyzeBoard";
+
 
 export default function App() {
   const [level, setLevel] = useState(1);
@@ -22,6 +25,12 @@ export default function App() {
   //   const STATIC_ROW = [1, 9, 2, 8, 3, 7, 4, 6, 5];
   const LEVEL_MIN = 1;
   const LEVEL_MAX = 11;
+
+  const levelCfg = LEVEL_CONFIG[level];
+  const boardStats = analyzeBoardState(board);
+  const constrainedCount = Object.values(boardStats.choiceMap || {})
+  .filter(v => v === 1).length;
+
 
   const handleLevelUp = () => {
     setLevel((prev) => Math.min(prev + 1, LEVEL_MAX));
@@ -115,6 +124,34 @@ export default function App() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="light" />
+
+    <View style={{ padding: 10, backgroundColor: "#111", marginBottom: 8 }}>
+  <Text style={{ color: "#0f0", fontSize: 12 }}>
+    Target Density: {levelCfg.targetMatchDensity}
+  </Text>
+  <Text style={{ color: "#0f0", fontSize: 12 }}>
+    Ratios → E:{levelCfg.ratios.easy} M:{levelCfg.ratios.medium} H:{levelCfg.ratios.hard}
+  </Text>
+  <Text style={{ color: "#0f0", fontSize: 12 }}>
+    Rescue Threshold: {levelCfg.rescueThreshold}
+  </Text>
+  <Text style={{ color: "#0f0", fontSize: 12 }}>
+    Relief Level: {levelCfg.relief ? "YES" : "NO"}
+  </Text>
+
+  <Text style={{ color: "#fff", fontSize: 12, marginTop: 6 }}>
+    Remaining Matches: {boardStats.remainingMatches}
+  </Text>
+  <Text style={{ color: "#fff", fontSize: 12 }}>
+    Match Density: {boardStats.matchDensity.toFixed(3)}
+  </Text>
+  <Text style={{ color: "#fff", fontSize: 12 }}>
+    Possible Pairs: {boardStats.possiblePairs}
+  </Text>
+  <Text style={{ color: "#ff0", fontSize: 12 }}>
+    Constrained Numbers: {constrainedCount}
+  </Text>
+</View>
 
       <View style={styles.header}>
         <View style={styles.levelControls}>
