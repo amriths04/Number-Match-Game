@@ -2,6 +2,9 @@
   "expo": {
     "name": "number-match-game",
     "slug": "number-match-game",
+
+    "entryPoint": "./node_modules/expo-router/entry",
+
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -19,7 +22,8 @@
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.amriths25.numbermatchgame"
     },
     "web": {
       "output": "static",
@@ -43,6 +47,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "467b7dc7-8493-484c-8a45-6aa9e4b0d9f4"
+      }
     }
   }
 }
