@@ -107,6 +107,26 @@ const styles = StyleSheet.create({
   elevation: 8, // Android glow
   transform: [{ scale: 1.05 }],
 },
+hintButton: {
+  marginTop: 12,
+  paddingVertical: 7,
+  paddingHorizontal: 18,
+  backgroundColor: "#6c5ce7",
+  borderRadius: 6,
+  alignItems: "center",
+  justifyContent: "center",
+},
+
+hintButtonDisabled: {
+  backgroundColor: "#444",
+  opacity: 0.5,
+},
+
+hintButtonText: {
+  color: "#fff",
+  fontSize: 15,
+  fontWeight: "600",
+},
 });
 
 export default styles;
