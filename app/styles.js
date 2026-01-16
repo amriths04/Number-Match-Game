@@ -96,6 +96,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
+  hintCell: {
+  backgroundColor: "#6c5ce7",
+  borderWidth: 2,
+  borderColor: "#a29bfe",
+  shadowColor: "#6c5ce7",
+  shadowOffset: { width: 0, height: 0 },
+  shadowOpacity: 0.9,
+  shadowRadius: 10,
+  elevation: 8, // Android glow
+  transform: [{ scale: 1.05 }],
+},
 });
 
 export default styles;

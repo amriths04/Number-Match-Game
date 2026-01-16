@@ -78,3 +78,46 @@ export const removeMatchedCells = (board, cell1, cell2) => {
 
   return newBoard;
 };
+
+export function findOneHint(board) {
+  const rows = board.length;
+  const cols = board[0].length;
+
+  const validPairs = [];
+
+  for (let r1 = 0; r1 < rows; r1++) {
+    for (let c1 = 0; c1 < cols; c1++) {
+      const val1 = board[r1][c1];
+      if (val1 === null) continue;
+
+      for (let r2 = 0; r2 < rows; r2++) {
+        for (let c2 = 0; c2 < cols; c2++) {
+          if (r1 === r2 && c1 === c2) continue;
+
+          const val2 = board[r2][c2];
+          if (val2 === null) continue;
+
+          if (!matchValidation(val1, val2)) continue;
+
+          const validMove =
+            isNeighbor(r1, c1, r2, c2) ||
+            isLineClear(board, r1, c1, r2, c2) ||
+            isDiagonalLineClear(board, r1, c1, r2, c2);
+
+          if (!validMove) continue;
+
+          validPairs.push([
+            { row: r1, col: c1 },
+            { row: r2, col: c2 },
+          ]);
+        }
+      }
+    }
+  }
+
+  if (validPairs.length === 0) return null;
+
+  const index = Math.floor(Math.random() * validPairs.length);
+  return validPairs[index];
+}
+

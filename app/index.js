@@ -1,10 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity,ScrollView  } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import styles from "./styles";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { isNeighbor, matchValidation, removeMatchedCells,isLineClear,isDiagonalLineClear } from "../src/logic/Helper";
-import { countRemainingMatches,clearEmptyRowsAndShiftUp,generateInitialBoard } from "../src/logic/Board";
+import {
+  isNeighbor,
+  matchValidation,
+  removeMatchedCells,
+  isLineClear,
+  isDiagonalLineClear,
+  findOneHint,
+} from "../src/logic/Helper";
+import {
+  countRemainingMatches,
+  clearEmptyRowsAndShiftUp,
+  generateInitialBoard,
+} from "../src/logic/Board";
 import { generateAdaptiveRow } from "../src/logic/generateAdaptiveRow";
 import { LEVEL_CONFIG } from "../src/logic/levels";
 import { analyzeBoardState } from "../src/logic/AnalyzeBoard";
@@ -13,6 +24,7 @@ export default function App() {
   const [level, setLevel] = useState(1);
   const [score, setScore] = useState(0);
   const [hasStarted, setHasStarted] = useState(false);
+  const [hintCells, setHintCells] = useState([]);
 
   const [selectedCell, setSelectedCell] = useState(null);
   const [secselectedCell, setSecSelectedCell] = useState(null);
@@ -56,6 +68,9 @@ export default function App() {
   };
 
   const oncellpress = (row, col) => {
+    if (hintCells.length) {
+      setHintCells([]);
+    }
     if (selectedCell && selectedCell.row === row && selectedCell.col === col) {
       setSelectedCell(null);
       setSecSelectedCell(null);
@@ -257,41 +272,56 @@ export default function App() {
           >
             {board.map((row, r) => (
               <View key={r} style={styles.row}>
-                {row.map((cell, c) => (
-                  <View key={c} style={styles.cell}>
-                    <TouchableOpacity
-                      style={[
-                        styles.pressnumber,
-                        selectedCell &&
-                          selectedCell.row === r &&
-                          selectedCell.col === c &&
-                          (ismatchpair
-                            ? styles.validCell
-                            : styles.selectedCell),
-                        secselectedCell &&
-                          secselectedCell.row === r &&
-                          secselectedCell.col === c &&
-                          (ismatchpair
-                            ? styles.validCell
-                            : styles.selectedCell),
-                      ]}
-                      onPress={() => oncellpress(r, c)}
-                    >
-                      <Text style={styles.cellText}>{cell}</Text>
-                    </TouchableOpacity>
-                  </View>
-                ))}
+                {row.map((cell, c) => {
+                  const isHinted = hintCells.some(
+                    (h) => h.row === r && h.col === c
+                  );
+
+                  return (
+                    <View key={c} style={styles.cell}>
+                      <TouchableOpacity
+                        style={[
+                          styles.pressnumber,
+                          isHinted && styles.hintCell,
+                          selectedCell &&
+                            selectedCell.row === r &&
+                            selectedCell.col === c &&
+                            (ismatchpair
+                              ? styles.validCell
+                              : styles.selectedCell),
+                          secselectedCell &&
+                            secselectedCell.row === r &&
+                            secselectedCell.col === c &&
+                            (ismatchpair
+                              ? styles.validCell
+                              : styles.selectedCell),
+                        ]}
+                        onPress={() => oncellpress(r, c)}
+                      >
+                        <Text style={styles.cellText}>{cell}</Text>
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })}
               </View>
             ))}
           </ScrollView>
 
-          {/* ACTIONS */}
           <TouchableOpacity style={styles.addButton} onPress={handleAddRow}>
             <Text style={styles.addButtonText}>+ ADD ROW</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.addButton}>
-            <Text style={styles.addButtonText}>HINT</Text>
+          <TouchableOpacity
+            onPress={() => {
+              setTimeout(() => {
+                const pair = findOneHint(board);
+                if (pair) {
+                  setHintCells(pair);
+                }
+              }, 0);
+            }}
+          >
+            <Text>💡 Hint</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.addButton, { backgroundColor: "#8b0000" }]}
