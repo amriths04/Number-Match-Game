@@ -25,7 +25,6 @@ export default function App() {
   const [score, setScore] = useState(0);
   const [hasStarted, setHasStarted] = useState(false);
   const [hintCells, setHintCells] = useState([]);
-  const [timeLeft, setTimeLeft] = useState(0);
   const [addRowUsed, setAddRowUsed] = useState(0);
   const [hintCooldown, setHintCooldown] = useState(false);
   const [gameStatus, setGameStatus] = useState(null);
@@ -43,7 +42,6 @@ export default function App() {
     setSecSelectedCell(null);
     setismatchPair(false);
     setBoard(generateInitialBoard(level));
-    setTimeLeft(LEVEL_CONFIG[level].targetTime);
     setHasStarted(true);
   };
 
@@ -69,24 +67,6 @@ export default function App() {
 
   const isLevelSuccess = isAddRowExhausted && noRemainingMatches;
 
-  useEffect(() => {
-    if (!hasStarted || timeLeft <= 0) return;
-
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [hasStarted, timeLeft]);
-  useEffect(() => {
-    if (!hasStarted) return;
-
-    if (timeLeft === 0 && !isLevelSuccess) {
-      console.log("LEVEL FAILED ❌ (TIME UP)");
-      setGameStatus("fail");
-      setHasStarted(false);
-    }
-  }, [timeLeft, hasStarted, isLevelSuccess]);
 
   useEffect(() => {
     if (!hasStarted) return;
@@ -211,7 +191,6 @@ export default function App() {
     setScore(0);
     setSelectedCell(null);
     setSecSelectedCell(null);
-    setTimeLeft(0);
     setismatchPair(false);
   };
 
@@ -230,11 +209,7 @@ export default function App() {
             </Text>
           )}
 
-          {gameStatus === "fail" && (
-            <Text style={{ color: "#ff4444", fontSize: 28, marginBottom: 20 }}>
-              ❌ TIME UP
-            </Text>
-          )}
+          
 
           <Text style={{ color: "#fff", fontSize: 22, marginBottom: 20 }}>
             Choose Level
@@ -330,15 +305,6 @@ export default function App() {
             </View>
 
             <Text style={styles.headerText}>Score: {score}</Text>
-            <Text
-              style={[
-                styles.headerText,
-                timeLeft <= 10 && { color: "#ff4444" },
-              ]}
-            >
-              ⏱ {Math.floor(timeLeft / 60)}:
-              {String(timeLeft % 60).padStart(2, "0")}
-            </Text>
           </View>
 
           {/* BOARD */}
