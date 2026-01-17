@@ -19,6 +19,9 @@ import {
 import { generateAdaptiveRow } from "../src/logic/generateAdaptiveRow";
 import { LEVEL_CONFIG } from "../src/logic/levels";
 import { analyzeBoardState } from "../src/logic/AnalyzeBoard";
+import { hasValidMove } from "../src/logic/BoardValidator";
+import { computeSeedMetrics } from "../src/logic/DebugMetrics";
+
 
 export default function App() {
   const [level, setLevel] = useState(1);
@@ -33,7 +36,7 @@ export default function App() {
   const [secselectedCell, setSecSelectedCell] = useState(null);
   const [ismatchpair, setismatchPair] = useState(false);
   const [board, setBoard] = useState([]);
-
+  
   const handleStartGame = () => {
     setScore(0);
     setGameStatus(null);
@@ -44,6 +47,13 @@ export default function App() {
     setBoard(generateInitialBoard(level));
     setHasStarted(true);
   };
+  useEffect(() => {
+  if (!hasStarted) return;
+  console.log("hasValidMove:", hasValidMove(board));
+}, [board, hasStarted]);
+
+const seedMetrics =
+  board.length > 0 ? computeSeedMetrics(board) : null;
 
   //   const STATIC_ROW = [1, 9, 2, 8, 3, 7, 4, 6, 5];
   const LEVEL_MIN = 1;
@@ -65,7 +75,9 @@ export default function App() {
   const isAddRowExhausted = addRowUsed >= maxAddRows;
   const noRemainingMatches = boardStats.remainingMatches === 0;
 
-  const isLevelSuccess = isAddRowExhausted && noRemainingMatches;
+  const noValidMoves = hasValidMove(board) === false;
+
+  const isLevelSuccess = noValidMoves;
 
 
   useEffect(() => {
@@ -247,42 +259,54 @@ export default function App() {
       {hasStarted && (
         <>
           {/* DEBUG */}
-          <View
-            style={{ padding: 10, backgroundColor: "#111", marginBottom: 8 }}
-          >
-            <Text style={{ color: "#0f0", fontSize: 12 }}>
-              Target Density: {levelCfg.targetMatchDensity}
-            </Text>
+          {/* DEBUG */}
+<View style={{ padding: 10, backgroundColor: "#111", marginBottom: 8 }}>
+  <Text style={{ color: "#0f0", fontSize: 12 }}>
+    Level {level}
+  </Text>
 
-            <Text style={{ color: "#0f0", fontSize: 12 }}>
-              Ratios → E:{levelCfg.ratios.easy} M:{levelCfg.ratios.medium} H:
-              {levelCfg.ratios.hard}
-            </Text>
+  <Text style={{ color: "#0f0", fontSize: 12 }}>
+    Board Size: {seedMetrics?.totalCells || 0} cells (3×9)
+  </Text>
 
-            <Text style={{ color: "#0f0", fontSize: 12 }}>
-              Rescue Threshold: {levelCfg.rescueThreshold}
-            </Text>
+  <Text style={{ color: "#0f0", fontSize: 12 }}>
+    Solvable at start: {hasValidMove(board) ? "YES ✅" : "NO ❌"}
+  </Text>
 
-            <Text style={{ color: "#0f0", fontSize: 12 }}>
-              Relief Level: {levelCfg.relief ? "YES" : "NO"}
-            </Text>
+  <Text style={{ color: "#0f0", fontSize: 12, marginTop: 6 }}>
+    Target Match Density: {levelCfg.targetMatchDensity}
+  </Text>
 
-            <Text style={{ color: "#fff", fontSize: 12, marginTop: 6 }}>
-              Remaining Matches: {boardStats.remainingMatches}
-            </Text>
+  <Text style={{ color: "#fff", fontSize: 12 }}>
+    Actual Match Density:{" "}
+    {seedMetrics
+      ? seedMetrics.matchDensity.toFixed(3)
+      : "—"}
+  </Text>
 
-            <Text style={{ color: "#fff", fontSize: 12 }}>
-              Match Density: {boardStats.matchDensity.toFixed(3)}
-            </Text>
+  <Text style={{ color: "#0f0", fontSize: 12, marginTop: 6 }}>
+    Max Stragglers (allowed): {levelCfg.maxStragglers}
+  </Text>
 
-            <Text style={{ color: "#fff", fontSize: 12 }}>
-              Possible Pairs: {boardStats.possiblePairs}
-            </Text>
+  <Text style={{ color: "#fff", fontSize: 12 }}>
+    Current Stragglers:{" "}
+    {seedMetrics ? seedMetrics.stragglers : "—"}
+  </Text>
 
-            <Text style={{ color: "#ff0", fontSize: 12 }}>
-              Constrained Numbers: {constrainedCount}
-            </Text>
-          </View>
+  <Text style={{ color: "#ff0", fontSize: 12, marginTop: 6 }}>
+    Expected End Clearance: {levelCfg.expectedClearance}
+  </Text>
+
+  <Text style={{ color: "#888", fontSize: 12 }}>
+    (Clearance is evaluated only at end of level)
+  </Text>
+
+  <Text style={{ color: "#0f0", fontSize: 12, marginTop: 6 }}>
+    Ratios → E:{levelCfg.ratios.easy} M:{levelCfg.ratios.medium} H:
+    {levelCfg.ratios.hard}
+  </Text>
+</View>
+
 
           {/* HEADER */}
           <View style={styles.header}>
