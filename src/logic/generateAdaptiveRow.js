@@ -1,107 +1,170 @@
 import { LEVEL_CONFIG } from "./levels";
 import { analyzeBoardState } from "./AnalyzeBoard";
 
-const weightedPick = (weights) => {
-  const total = Object.values(weights).reduce((a, b) => a + b, 0);
-  let r = Math.random() * total;
-  for (const k in weights) {
-    if (r < weights[k]) return k;
-    r -= weights[k];
-  }
-  return Object.keys(weights)[0];
-};
+const rand = (min, max) =>
+  Math.floor(Math.random() * (max - min + 1)) + min;
 
-const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+const chance = (p) => Math.random() < p;
 
-export const generateAdaptiveRow = (board, level) => {
-  const cfg = LEVEL_CONFIG[level] || LEVEL_CONFIG[1];
-  const { ratios, targetMatchDensity, rescueThreshold } = cfg;
+export const generateAdaptiveRow = (
+  board,
+  level,
+  addRowUsed,
+  MAX_ADD_ROWS
+) => {
+  const cfg = LEVEL_CONFIG[level];
+  const {
+    maxStragglers,
+    rescueThreshold,
+    tension,
+    addRowReliability,
+    matchSpacingBias,
+    entropyBudget,
+    idealAddRowUsage,
+  } = cfg;
+  const [idealMin, idealMax] = idealAddRowUsage;
+
+// 🔥 Add-Row Timing Penalty
+const timingMultiplier =
+  addRowUsed < idealMin
+    ? 0.6   // too early → weak help
+    : addRowUsed > idealMax
+    ? 1.2   // too late → desperation help
+    : 1.0;  // ideal window
+
+    const effectiveReliability = Math.min(
+  1,
+  addRowReliability * timingMultiplier
+);
+
+const effectiveEntropy = Math.min(
+  1,
+  entropyBudget / timingMultiplier
+);
 
   const {
-    matchDensity,
-    remainingMatches,
-    frequencyMap,
     lonelyNumbers,
-    choiceMap
+    frequencyMap,
+    remainingMatches,
   } = analyzeBoardState(board);
 
   const cols = board[0].length;
-  const numbers = Object.keys(frequencyMap).map(Number);
+  const row = Array(cols).fill(null);
 
-  let intent = "neutral";
+  /* -------------------------------------------------
+     1️⃣ RESCUE MODE (STRICT, LEVEL-AWARE)
+  ------------------------------------------------- */
+  const exceededIdealUsage = addRowUsed >= idealAddRowUsage[1];
+  const rescueMode =
+    (remainingMatches === 0 && exceededIdealUsage) ||
+    lonelyNumbers.length > maxStragglers ||
+    (remainingMatches <= rescueThreshold && tension <= 4);
 
-  if (remainingMatches <= rescueThreshold) {
-    intent = "help";
+  /* -------------------------------------------------
+     2️⃣ INJECTION BUDGET (ENTROPY-CAPPED)
+  ------------------------------------------------- */
+  let maxInject;
+
+  if (rescueMode) {
+    maxInject = 4;
   } else {
-    const delta = targetMatchDensity - matchDensity;
-    if (delta > 0.08) intent = "help";
-    else if (delta < -0.08) intent = "disrupt";
+    maxInject = Math.max(
+  1,
+  Math.round((1 - effectiveEntropy) * 6)
+);
   }
 
-  const easy = [];
-  const medium = [];
-  const hard = [];
+  let injected = 0;
 
-  numbers.forEach((n) => {
-    const f = frequencyMap[n];
-    if (f >= 2) easy.push(n);
-    else if (f === 1) medium.push(n);
-  });
+  /* -------------------------------------------------
+     3️⃣ STRAGGLER HANDLING (NOT ALWAYS HELPFUL)
+  ------------------------------------------------- */
+  const shuffledStragglers = [...lonelyNumbers].sort(
+    () => Math.random() - 0.5
+  );
 
-  lonelyNumbers.forEach((n) => hard.push(n));
+  for (const n of shuffledStragglers) {
+    if (injected >= maxInject) break;
 
-  if (easy.length === 0) easy.push(...medium);
-  if (medium.length === 0) medium.push(...easy);
-  if (hard.length === 0) hard.push(...medium);
+    // reliability gate
+    if (!chance(effectiveReliability)) continue;
 
-  const constrained = Object.keys(choiceMap || {})
-    .filter(n => choiceMap[n] === 1)
-    .map(Number);
-
-  if (constrained.length === 0) constrained.push(...medium);
-
-  const row = [];
-
-  for (let i = 0; i < cols; i++) {
-    let bucket = weightedPick(ratios);
-
-    if (intent === "help" && level <= 5 && Math.random() < 0.6) {
-      bucket = "easy";
+    if (matchSpacingBias === "adjacent") {
+      const c = rand(0, cols - 2);
+      row[c] = n;
+      row[c + 1] = n;
+      injected += 2;
     }
 
-    if (intent === "disrupt" && level >= 7 && Math.random() < 0.6) {
-      bucket = "hard";
+    else if (matchSpacingBias === "row") {
+      const c1 = rand(0, cols - 1);
+      const c2 = (c1 + rand(2, 4)) % cols;
+      row[c1] = n;
+      row[c2] = n;
+      injected += 2;
     }
 
-    let value;
+    else if (matchSpacingBias === "far") {
+      row[rand(0, cols - 1)] = n;
+      injected += 1; // friction
+    }
 
-    if (bucket === "easy") {
-      value = pick(easy);
-    }
-    else if (bucket === "medium") {
-      if (Math.random() < 0.5) {
-        value = pick(medium);
-      } else {
-        const sum = numbers.filter(n => numbers.includes(10 - n));
-        value = sum.length ? pick(sum) : pick(medium);
-      }
-    }
     else {
-      const roll = Math.random();
-
-      if (roll < 0.45) {
-        const sum = constrained.filter(n => numbers.includes(10 - n));
-        value = sum.length ? pick(sum) : pick(constrained);
-      }
-      else if (roll < 0.75) {
-        value = pick(constrained);
-      }
-      else {
-        value = pick(hard);
-      }
+      // chaotic → decoy-heavy
+      row[rand(0, cols - 1)] = n;
+      injected += 1;
     }
+  }
 
-    row.push(value);
+  /* -------------------------------------------------
+     4️⃣ FORCED MATCH (ONLY TRUE RESCUE)
+  ------------------------------------------------- */
+  if (rescueMode && injected < 2) {
+    const nums = Object.keys(frequencyMap).map(Number);
+
+    for (const n of nums) {
+      const c = 10 - n;
+      if (!nums.includes(c)) continue;
+
+      // even rescue respects spacing bias
+      if (matchSpacingBias === "adjacent") {
+        row[1] = n;
+        row[2] = c;
+      } else if (matchSpacingBias === "row") {
+        row[1] = n;
+        row[cols - 2] = c;
+      } else {
+        row[0] = n;
+        row[cols - 1] = c;
+      }
+
+      injected = 2;
+      break;
+    }
+  }
+
+  /* -------------------------------------------------
+     5️⃣ ENTROPY FILL (THE KEY DIFFICULTY DRIVER)
+     Adds misleading numbers intentionally
+  ------------------------------------------------- */
+  if (injected < maxInject && effectiveEntropy > 0.25) {
+    const nums = Object.keys(frequencyMap).map(Number);
+
+    const entropyAdds = Math.round(effectiveEntropy * 4);
+
+    for (let i = 0; i < entropyAdds && injected < maxInject; i++) {
+      row[rand(0, cols - 1)] = nums.length
+        ? nums[rand(0, nums.length - 1)]
+        : rand(1, 9);
+      injected += 1;
+    }
+  }
+
+  /* -------------------------------------------------
+     6️⃣ SAFETY NET (NEVER DEAD, NEVER EASY)
+  ------------------------------------------------- */
+  if (injected === 0) {
+    row[rand(0, cols - 1)] = rand(1, 9);
   }
 
   return row;

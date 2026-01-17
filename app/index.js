@@ -36,6 +36,7 @@ export default function App() {
   const [secselectedCell, setSecSelectedCell] = useState(null);
   const [ismatchpair, setismatchPair] = useState(false);
   const [board, setBoard] = useState([]);
+  const MAX_ADD_ROWS = 6;
   
   const handleStartGame = () => {
     setScore(0);
@@ -70,16 +71,40 @@ const seedMetrics =
           frequencyMap: {},
           lonelyNumbers: [],
         };
+// --- END GAME METRICS ---
+const TOTAL_START_CELLS = 27; // fixed (3×9 seed)
 
-  const maxAddRows = levelCfg.idealAddRowUsage[1];
-  const isAddRowExhausted = addRowUsed >= maxAddRows;
+const currentFilledCells =
+  board.flat().filter(v => v != null).length;
+
+const clearance =
+  1 - currentFilledCells / TOTAL_START_CELLS;
+
+const currentStragglers =
+  boardStats.lonelyNumbers?.length ?? 0;
+
+  
+  const isAddRowExhausted = addRowUsed >= MAX_ADD_ROWS;
   const noRemainingMatches = boardStats.remainingMatches === 0;
 
-  const noValidMoves = hasValidMove(board) === false;
+  const [idealMin, idealMax] = levelCfg.idealAddRowUsage;
 
-  const isLevelSuccess = noValidMoves;
+const noValidMoves = hasValidMove(board) === false;
 
+const playerIsDone =
+  noValidMoves &&
+  addRowUsed >= idealMin;
 
+const clearanceSatisfied =
+  clearance >= levelCfg.expectedClearance;
+
+const stragglersSatisfied =
+  currentStragglers <= levelCfg.maxStragglers;
+
+const isLevelSuccess =
+  playerIsDone &&
+  clearanceSatisfied &&
+  stragglersSatisfied;
   useEffect(() => {
     if (!hasStarted) return;
 
@@ -184,17 +209,21 @@ const seedMetrics =
   };
 
   const handleAddRow = () => {
-    const maxAddRows = levelCfg.idealAddRowUsage[1];
+  if (addRowUsed >= MAX_ADD_ROWS) return;
 
-    if (addRowUsed >= maxAddRows) return;
+  setBoard((prev) => {
+    const newRow = generateAdaptiveRow(
+      prev,
+      level,
+      addRowUsed,
+      MAX_ADD_ROWS
+    );
+    return [...prev, newRow];
+  });
 
-    setBoard((prev) => {
-      const newRow = generateAdaptiveRow(prev, level);
-      return [...prev, newRow];
-    });
+  setAddRowUsed((prev) => prev + 1);
+};
 
-    setAddRowUsed((prev) => prev + 1);
-  };
 
   const handleEndGame = () => {
     setHasStarted(false);
@@ -273,9 +302,6 @@ const seedMetrics =
     Solvable at start: {hasValidMove(board) ? "YES ✅" : "NO ❌"}
   </Text>
 
-  <Text style={{ color: "#0f0", fontSize: 12, marginTop: 6 }}>
-    Target Match Density: {levelCfg.targetMatchDensity}
-  </Text>
 
   <Text style={{ color: "#fff", fontSize: 12 }}>
     Actual Match Density:{" "}
@@ -300,12 +326,47 @@ const seedMetrics =
   <Text style={{ color: "#888", fontSize: 12 }}>
     (Clearance is evaluated only at end of level)
   </Text>
+<Text style={{ color: "#0f0", fontSize: 12, marginTop: 6 }}>
+  Tension Level: {levelCfg.tension} / 10
+</Text>
 
-  <Text style={{ color: "#0f0", fontSize: 12, marginTop: 6 }}>
-    Ratios → E:{levelCfg.ratios.easy} M:{levelCfg.ratios.medium} H:
-    {levelCfg.ratios.hard}
-  </Text>
+<Text style={{ color: "#888", fontSize: 12 }}>
+  {levelCfg.note}
+</Text>
+
+<Text style={{ color: levelCfg.relief ? "#4caf50" : "#ff9800", fontSize: 12 }}>
+  Relief Level: {levelCfg.relief ? "YES 🫶" : "NO ⚠️"}
+</Text>
+
 </View>
+<Text
+  style={{
+    color: clearanceSatisfied ? "#4caf50" : "#ff4444",
+    fontSize: 12,
+  }}
+>
+  Clearance: {(clearance * 100).toFixed(1)}% /
+  {(levelCfg.expectedClearance * 100).toFixed(0)}%
+</Text>
+
+<Text
+  style={{
+    color: stragglersSatisfied ? "#4caf50" : "#ff4444",
+    fontSize: 12,
+  }}
+>
+  Stragglers: {currentStragglers} / {levelCfg.maxStragglers}
+</Text>
+
+<Text
+  style={{
+    color: noValidMoves ? "#4caf50" : "#ff4444",
+    fontSize: 12,
+  }}
+>
+  No Valid Moves: {noValidMoves ? "YES" : "NO"}
+</Text>
+
 
 
           {/* HEADER */}
@@ -378,18 +439,19 @@ const seedMetrics =
             <TouchableOpacity
               style={[
                 styles.addButton,
-                addRowUsed >= levelCfg.idealAddRowUsage[1] && {
+                addRowUsed >= MAX_ADD_ROWS
+ && {
                   opacity: 0.4,
                 },
               ]}
               onPress={handleAddRow}
-              disabled={addRowUsed >= levelCfg.idealAddRowUsage[1]}
+              disabled={addRowUsed >= MAX_ADD_ROWS}
             >
               <Text style={styles.addButtonText}>+ ADD ROW</Text>
             </TouchableOpacity>
 
             <Text style={{ color: "#aaa", fontSize: 12, marginTop: 4 }}>
-              Add Row: {addRowUsed} / {levelCfg.idealAddRowUsage[1]}
+              Add Row: {addRowUsed} / {MAX_ADD_ROWS}
             </Text>
           </View>
 
