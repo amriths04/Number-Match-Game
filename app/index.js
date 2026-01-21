@@ -355,10 +355,19 @@ const handleAddRow = () => {
   <Text style={{ color: "#ffa726", fontSize: 12 }}>
     Seed Match Ratio: {seedMetrics?.seedMatchRatio?.toFixed(3) ?? "—"}
   </Text>
-  <Text style={{ color: "#aaa", fontSize: 12 }}>
-  Seed: {seedMetrics?.isGenerousSeed ? "Generous" : seedMetrics?.isHarshSeed ? "Harsh" : "Balanced"}
-</Text>
 
+  <Text style={{ color: "#aaa", fontSize: 12 }}>
+    Seed:{" "}
+    {seedMetrics?.isGenerousSeed
+      ? "Generous"
+      : seedMetrics?.isHarshSeed
+      ? "Harsh"
+      : "Balanced"}
+  </Text>
+
+  <Text style={{ color: "#aaa", fontSize: 12 }}>
+    Dominance: {seedMetrics?.dominantChoiceRatio?.toFixed(2)}
+  </Text>
 </View>
 
 

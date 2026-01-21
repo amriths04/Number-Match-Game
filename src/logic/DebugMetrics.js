@@ -7,13 +7,11 @@ import {
 
 /* ---------------------------------
    COUNT RAW SEED MATCHES
-   (orthogonal forward only)
 --------------------------------- */
 export const countSeedMatches = (board) => {
   let count = 0;
   const rows = board.length;
   const cols = board[0].length;
-
   const dirs = [[0, 1], [1, 0]];
 
   for (let r = 0; r < rows; r++) {
@@ -24,7 +22,6 @@ export const countSeedMatches = (board) => {
       for (const [dr, dc] of dirs) {
         const nr = r + dr;
         const nc = c + dc;
-
         if (
           nr < rows &&
           nc < cols &&
@@ -43,9 +40,7 @@ export const countSeedMatches = (board) => {
    MAIN SEED METRICS
 --------------------------------- */
 export function computeSeedMetrics(board) {
-  if (!board || board.length === 0) {
-    return null;
-  }
+  if (!board || board.length === 0) return null;
 
   const rows = board.length;
   const cols = board[0].length;
@@ -85,11 +80,8 @@ export function computeSeedMetrics(board) {
         }
       }
 
-      if (hasAnyMatch) {
-        matchCapableCount++;
-      } else {
-        stragglerCount++;
-      }
+      if (hasAnyMatch) matchCapableCount++;
+      else stragglerCount++;
 
       totalChoices += choices;
       if (choices > maxChoicesForAnyCell) {
@@ -106,12 +98,14 @@ export function computeSeedMetrics(board) {
   const seedMatchRatio =
     totalCells > 0 ? seedMatches / totalCells : 0;
 
-  const stragglerRatio =
-    totalCells > 0 ? stragglerCount / totalCells : 0;
-
   const avgChoicesPerCell =
     matchCapableCount > 0
       ? totalChoices / matchCapableCount
+      : 0;
+
+  const dominantChoiceRatio =
+    avgChoicesPerCell > 0
+      ? maxChoicesForAnyCell / avgChoicesPerCell
       : 0;
 
   return {
@@ -121,7 +115,6 @@ export function computeSeedMetrics(board) {
     /* fairness */
     matchCapableCount,
     stragglers: stragglerCount,
-    stragglerRatio,
 
     /* potential */
     matchDensity,
@@ -133,9 +126,11 @@ export function computeSeedMetrics(board) {
     /* decision pressure */
     avgChoicesPerCell,
     maxChoicesForAnyCell,
+    dominantChoiceRatio,
 
-    /* qualitative flags (great for demos) */
+    /* qualitative flags */
     isGenerousSeed: seedMatchRatio > 0.12,
     isHarshSeed: seedMatchRatio < 0.05,
+    isDominantChoiceBoard: dominantChoiceRatio > 1.6,
   };
 }
