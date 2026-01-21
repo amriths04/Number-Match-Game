@@ -29,14 +29,19 @@ const getRowsPerAdd = (level, addRowUsed, MAX_ADD_ROWS) => {
     level <= 2 ? 2 :
     level <= 4 ? 3 :
     level <= 6 ? 3 :
-    level <= 8 ? 3 : 4;
+    level === 7 ? 4 :
+    level === 8 ? 5 :
+    level === 9 ? 6 :
+    7; // level 10+
 
-  const mercy = addRowUsed / MAX_ADD_ROWS;
-  if (mercy > 0.6) base--;
-  if (mercy > 0.85) base--;
+  // decay towards completion within the SAME level
+  const decayRatio = addRowUsed / MAX_ADD_ROWS; // 0 → 1
+  const decayFactor = 0.6; // controls how fast rows shrink
 
-  return Math.max(1, base);
+  const rows = Math.ceil(base * (1 - decayRatio * decayFactor));
+  return Math.max(1, rows);
 };
+
 
 /* ---------------------------------
    MERCY SCALING
@@ -88,6 +93,22 @@ const placeDiagonalFixSameColumn = (row, s, rowFix, cols, isLast) => {
   }
 
   return false;
+};
+
+const getRealMatchDensity = (level) => {
+  if (level <= 2) return 0.8;
+  if (level <= 4) return 0.65;
+  if (level <= 6) return 0.5;
+  if (level <= 8) return 0.35;
+  return 0.25; // level 9+
+};
+
+const getCrowdDensity = (level) => {
+  if (level <= 2) return 0.05;
+  if (level <= 4) return 0.15;
+  if (level <= 6) return 0.25;
+  if (level <= 8) return 0.35;
+  return 0.45;
 };
 
 /* ---------------------------------
@@ -250,28 +271,39 @@ break; // exit diagonal rule, NOT the function
   /* ---------------------------------
      🟣 CROWD INJECTION (CORRECT PLACE)
   --------------------------------- */
-  const crowdChance = levelCfg.addRow.decoyDensity || 0;
+  const crowdChance = getCrowdDensity(level);
+const realMatchChance = getRealMatchDensity(level);
 
-  if (crowdChance > 0) {
-    for (const row of rowsToAdd) {
-      let c = 0;
-      while (c < cols - 1) {
-        if (row[c] !== null) {
-          c++;
-          continue;
-        }
-
-        if (Math.random() > crowdChance) {
-          c++;
-          continue;
-        }
-
-        const base = Math.floor(Math.random() * 9) + 1;
-        row[c] = base;
-        row[c + 1] = 10 - base; // guaranteed match
-        c += 2;
-      }
+for (const row of rowsToAdd) {
+  let c = 0;
+  while (c < cols - 1) {
+    if (row[c] !== null) {
+      c++;
+      continue;
     }
+
+    const roll = Math.random();
+
+    // Helpful real match (rarer at higher levels)
+    if (roll < realMatchChance) {
+      const base = Math.floor(Math.random() * 9) + 1;
+      row[c] = base;
+      row[c + 1] = 10 - base;
+      c += 2;
+      continue;
+    }
+
+    // Crowd / decoy
+    if (roll < realMatchChance + crowdChance) {
+      row[c] = Math.floor(Math.random() * 9) + 1;
+      c++;
+      continue;
+    }
+
+    // Leave empty
+    c++;
   }
+}
+
   return rowsToAdd;
 };

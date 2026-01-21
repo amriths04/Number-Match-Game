@@ -101,6 +101,7 @@ export default function App() {
   const isFail =
     hasStarted &&
     noValidMoves &&
+    !isWin && 
     addRowUsed >= MAX_ADD_ROWS;
 
   const canAddRow =
@@ -119,6 +120,7 @@ export default function App() {
       console.log("LEVEL CLEARED ✅");
       setGameStatus("success");
       setHasStarted(false);
+      return;
     }
 
     if (isFail) {
