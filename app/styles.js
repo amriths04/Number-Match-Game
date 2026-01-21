@@ -16,6 +16,7 @@ const styles = StyleSheet.create({
     width: "100%",
     paddingTop: 20,
     paddingBottom: 10,
+    alignItems: "center",
   },
 
   headerText: {
@@ -41,14 +42,17 @@ const styles = StyleSheet.create({
     backgroundColor: "#2c2c2c",
   },
 
+  pressnumber: {
+    flex: 1,
+    backgroundColor: "#444",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+
   cellText: {
     color: "#ffffff",
     fontSize: 16,
-  },
-
-  pressnumber: {
-    backgroundColor: "#444",
-    flex: 1,
+    fontWeight: "600",
   },
 
   addButton: {
@@ -56,11 +60,15 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     paddingHorizontal: 18,
     backgroundColor: "#4caf50",
+    borderRadius: 6,
+    alignItems: "center",
+    justifyContent: "center",
   },
 
   addButtonText: {
     color: "#000",
     fontSize: 16,
+    fontWeight: "600",
   },
 
   selectedCell: {
@@ -70,6 +78,7 @@ const styles = StyleSheet.create({
   validCell: {
     backgroundColor: "#4caf50",
   },
+
   levelControls: {
     flexDirection: "row",
     alignItems: "center",
@@ -96,37 +105,42 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
+
+  /* -----------------------------
+     HINT STYLES
+  ----------------------------- */
   hintCell: {
-  backgroundColor: "#6c5ce7",
-  borderWidth: 2,
-  borderColor: "#a29bfe",
-  shadowColor: "#6c5ce7",
-  shadowOffset: { width: 0, height: 0 },
-  shadowOpacity: 0.9,
-  shadowRadius: 10,
-  elevation: 8, // Android glow
-  transform: [{ scale: 1.05 }],
-},
-hintButton: {
-  marginTop: 12,
-  paddingVertical: 7,
-  paddingHorizontal: 18,
-  backgroundColor: "#6c5ce7",
-  borderRadius: 6,
-  alignItems: "center",
-  justifyContent: "center",
-},
+    backgroundColor: "#6c5ce7",
+    borderWidth: 2,
+    borderColor: "#a29bfe",
+    shadowColor: "#6c5ce7",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.9,
+    shadowRadius: 10,
+    elevation: 8, // Android glow
+    transform: [{ scale: 1.05 }],
+  },
 
-hintButtonDisabled: {
-  backgroundColor: "#444",
-  opacity: 0.5,
-},
+  hintButton: {
+    marginTop: 12,
+    paddingVertical: 7,
+    paddingHorizontal: 18,
+    backgroundColor: "#6c5ce7",
+    borderRadius: 6,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 
-hintButtonText: {
-  color: "#fff",
-  fontSize: 15,
-  fontWeight: "600",
-},
+  hintButtonDisabled: {
+    backgroundColor: "#444",
+    opacity: 0.5,
+  },
+
+  hintButtonText: {
+    color: "#fff",
+    fontSize: 15,
+    fontWeight: "600",
+  },
 });
 
 export default styles;

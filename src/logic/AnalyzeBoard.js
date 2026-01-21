@@ -1,5 +1,11 @@
 import { countRemainingMatches } from "./Board";
-import { isNeighbor, isLineClear, isDiagonalLineClear,matchValidation } from "./Helper";
+import {
+  isNeighbor,
+  isLineClear,
+  isDiagonalLineClear,
+  isExtendedWrapClear,
+  matchValidation
+} from "./Helper";
 
 export const analyzeBoardState = (board) => {
   if (!board || board.length === 0) {
@@ -23,6 +29,9 @@ export const analyzeBoardState = (board) => {
   const rows = board.length;
   const cols = board[0].length;
 
+  /* -----------------------------
+     Frequency + Stragglers
+  ----------------------------- */
   for (let r = 0; r < rows; r++) {
     for (let c = 0; c < cols; c++) {
       const val = board[r][c];
@@ -39,6 +48,9 @@ export const analyzeBoardState = (board) => {
     }
   }
 
+  /* -----------------------------
+     Choice Map (WITH EXTENDED WRAP)
+  ----------------------------- */
   for (let r1 = 0; r1 < rows; r1++) {
     for (let c1 = 0; c1 < cols; c1++) {
       const v1 = board[r1][c1];
@@ -49,13 +61,15 @@ export const analyzeBoardState = (board) => {
       for (let r2 = 0; r2 < rows; r2++) {
         for (let c2 = 0; c2 < cols; c2++) {
           if (r1 === r2 && c1 === c2) continue;
+
           const v2 = board[r2][c2];
           if (v2 === null) continue;
 
           const canConnect =
             isNeighbor(r1, c1, r2, c2) ||
             isLineClear(board, r1, c1, r2, c2) ||
-            isDiagonalLineClear(board, r1, c1, r2, c2);
+            isDiagonalLineClear(board, r1, c1, r2, c2) ||
+            isExtendedWrapClear(board, r1, c1, r2, c2);
 
           if (canConnect && matchValidation(v1, v2)) {
             choices++;
@@ -99,7 +113,8 @@ export const countPossiblePairs = (board) => {
           const canConnect =
             isNeighbor(r1, c1, r2, c2) ||
             isLineClear(board, r1, c1, r2, c2) ||
-            isDiagonalLineClear(board, r1, c1, r2, c2);
+            isDiagonalLineClear(board, r1, c1, r2, c2) ||
+            isExtendedWrapClear(board, r1, c1, r2, c2);
 
           if (canConnect) {
             possiblePairs++;
@@ -111,3 +126,49 @@ export const countPossiblePairs = (board) => {
 
   return possiblePairs;
 };
+
+/* -----------------------------
+   STRAGGLER CELL POSITIONS
+----------------------------- */
+export const findStragglerCells = (board) => {
+  const rows = board.length;
+  const cols = board[0].length;
+  const stragglers = [];
+
+  for (let r1 = 0; r1 < rows; r1++) {
+    for (let c1 = 0; c1 < cols; c1++) {
+      const v1 = board[r1][c1];
+      if (v1 === null) continue;
+
+      let hasMatch = false;
+
+      for (let r2 = 0; r2 < rows && !hasMatch; r2++) {
+        for (let c2 = 0; c2 < cols; c2++) {
+          if (r1 === r2 && c1 === c2) continue;
+          const v2 = board[r2][c2];
+          if (v2 === null) continue;
+
+          if (!matchValidation(v1, v2)) continue;
+
+          const canConnect =
+            isNeighbor(r1, c1, r2, c2) ||
+            isLineClear(board, r1, c1, r2, c2) ||
+            isDiagonalLineClear(board, r1, c1, r2, c2) ||
+            isExtendedWrapClear(board, r1, c1, r2, c2);
+
+          if (canConnect) {
+            hasMatch = true;
+            break;
+          }
+        }
+      }
+
+      if (!hasMatch) {
+        stragglers.push({ row: r1, col: c1, val: v1 });
+      }
+    }
+  }
+
+  return stragglers;
+};
+

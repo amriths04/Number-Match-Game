@@ -1,180 +1,213 @@
 export const LEVEL_CONFIG = {
+
   1: {
     level: 1,
-    tension: 2,
-    expectedClearance: 0.90,
-    maxStragglers: 2,
-    rescueThreshold: 1,
-    idealAddRowUsage: [0, 1],
-    relief: false,
+    experience: "Very Easy. Instant gratification.",
 
-    // 🆕 Difficulty drivers
-    addRowReliability: 0.95,
-    matchSpacingBias: "adjacent",
-    entropyBudget: 0.10,
+    orderRobustness: 1.0,
+    convergenceDepth: Infinity,
+    dominantChoiceRatio: 1,
+    decoyDensity: 0.0,
+    initialMatchDensity: 0.8, 
+    addRow: {
+      stragglerHelp: 1.0,
+      decoyDensity: 0.0,
+      dependencyDepth: 0
+    },
 
-    note: "Easy. Instant gratification."
+    telemetry: {
+      targetTime: 45,
+      expectedAddRowUsage: [0, 1]
+    }
   },
 
   2: {
     level: 2,
-    tension: 3,
-    expectedClearance: 0.85,
-    maxStragglers: 3,
-    rescueThreshold: 1,
-    idealAddRowUsage: [1, 2],
-    relief: false,
+    experience: "Easy. Obvious matches.",
 
-    addRowReliability: 0.85,
-    matchSpacingBias: "adjacent",
-    entropyBudget: 0.18,
+    orderRobustness: 0.9,
+    convergenceDepth: 5,
+    dominantChoiceRatio: 0.85,
+    decoyDensity: 0.1,
+    initialMatchDensity: 0.7, 
+    addRow: {
+      stragglerHelp: 0.95,
+      decoyDensity: 0.05,
+      dependencyDepth: 0
+    },
 
-    note: "Easy → Normal transition."
+    telemetry: {
+      targetTime: 60,
+      expectedAddRowUsage: [1, 2]
+    }
   },
 
   3: {
     level: 3,
-    tension: 4,
-    expectedClearance: 0.78,
-    maxStragglers: 5,
-    rescueThreshold: 2,
-    idealAddRowUsage: [2, 3],
-    relief: false,
+    experience: "Normal. Requires scanning.",
 
-    addRowReliability: 0.75,
-    matchSpacingBias: "row",
-    entropyBudget: 0.25,
+    orderRobustness: 0.75,
+    convergenceDepth: 3,
+    dominantChoiceRatio: 0.7,
+    decoyDensity: 0.2,
+    initialMatchDensity: 0.6, 
+    addRow: {
+      stragglerHelp: 0.85,
+      decoyDensity: 0.15,
+      dependencyDepth: 0
+    },
 
-    note: "Normal. Requires scanning."
+    telemetry: {
+      targetTime: 90,
+      expectedAddRowUsage: [2, 3]
+    }
   },
 
   4: {
     level: 4,
-    tension: 5,
-    expectedClearance: 0.72,
-    maxStragglers: 6,
-    rescueThreshold: 2,
-    idealAddRowUsage: [2, 3],
-    relief: false,
+    experience: "Normal+. Order starts to matter.",
 
-    addRowReliability: 0.65,
-    matchSpacingBias: "row",
-    entropyBudget: 0.32,
+    orderRobustness: 0.6,
+    convergenceDepth: 2,
+    dominantChoiceRatio: 0.55,
+    decoyDensity: 0.3,
+    initialMatchDensity: 0.5,
+    addRow: {
+      stragglerHelp: 0.75,
+      decoyDensity: 0.25,
+      dependencyDepth: 1
+    },
 
-    note: "Challenging but fair."
+    telemetry: {
+      targetTime: 120,
+      expectedAddRowUsage: [2, 3]
+    }
   },
 
   5: {
     level: 5,
-    tension: 6,
-    expectedClearance: 0.65,
-    maxStragglers: 8,
-    rescueThreshold: 2,
-    idealAddRowUsage: [2, 3],
-    relief: false,
+    experience: "Hard. Matches buried behind decoys.",
 
-    addRowReliability: 0.55,
-    matchSpacingBias: "far",
-    entropyBudget: 0.40,
+    orderRobustness: 0.45,
+    convergenceDepth: 1,
+    dominantChoiceRatio: 0.4,
+    decoyDensity: 0.45,
+    initialMatchDensity: 0.4,
+    addRow: {
+      stragglerHelp: 0.65,
+      decoyDensity: 0.35,
+      dependencyDepth: 1
+    },
 
-    note: "Hard. Matches buried behind decoys."
+    telemetry: {
+      targetTime: 150,
+      expectedAddRowUsage: [2, 3]
+    }
   },
 
-  // 🔽 SAWTOOTH DROP (RELIEF)
+  // 🔽 SAWTOOTH RELIEF
   6: {
     level: 6,
-    tension: 4,
-    expectedClearance: 0.75,
-    maxStragglers: 5,
-    rescueThreshold: 1,
-    idealAddRowUsage: [2, 4],
-    relief: true,
+    experience: "Relief. Back to Normal difficulty.",
 
-    addRowReliability: 0.80,
-    matchSpacingBias: "row",
-    entropyBudget: 0.22,
+    orderRobustness: 0.6,
+    convergenceDepth: 2,
+    dominantChoiceRatio: 0.6,
+    decoyDensity: 0.25,
+    initialMatchDensity: 0.5,
+    addRow: {
+      stragglerHelp: 0.8,
+      decoyDensity: 0.2,
+      dependencyDepth: 0
+    },
 
-    note: "Relief. Difficulty drops."
+    telemetry: {
+      targetTime: 90,
+      expectedAddRowUsage: [2, 4]
+    }
   },
 
   7: {
     level: 7,
-    tension: 7,
-    expectedClearance: 0.60,
-    maxStragglers: 9,
-    rescueThreshold: 2,
-    idealAddRowUsage: [3, 4],
-    relief: false,
+    experience: "Hard+. Optimal order exists.",
 
-    addRowReliability: 0.45,
-    matchSpacingBias: "far",
-    entropyBudget: 0.48,
+    orderRobustness: 0.35,
+    convergenceDepth: 1,
+    dominantChoiceRatio: 0.3,
+    decoyDensity: 0.55,
+    initialMatchDensity: 0.45,
+    addRow: {
+      stragglerHelp: 0.55,
+      decoyDensity: 0.45,
+      dependencyDepth: 1
+    },
 
-    note: "Difficulty ramps up again."
+    telemetry: {
+      targetTime: 150,
+      expectedAddRowUsage: [3, 4]
+    }
   },
 
   8: {
     level: 8,
-    tension: 8,
-    expectedClearance: 0.55,
-    maxStragglers: 10,
-    rescueThreshold: 2,
-    idealAddRowUsage: [3, 4],
-    relief: false,
+    experience: "Very Hard. Order is strict.",
 
-    addRowReliability: 0.35,
-    matchSpacingBias: "far",
-    entropyBudget: 0.58,
+    orderRobustness: 0.25,
+    convergenceDepth: 0,
+    dominantChoiceRatio: 0.25,
+    decoyDensity: 0.65,
+    initialMatchDensity: 0.35,
+    addRow: {
+      stragglerHelp: 0.45,
+      decoyDensity: 0.55,
+      dependencyDepth: 2
+    },
 
-    note: "Very hard."
+    telemetry: {
+      targetTime: 180,
+      expectedAddRowUsage: [4, 5]
+    }
   },
 
   9: {
     level: 9,
-    tension: 9,
-    expectedClearance: 0.50,
-    maxStragglers: 12,
-    rescueThreshold: 3,
-    idealAddRowUsage: [4, 5],
-    relief: false,
+    experience: "Extreme. Mistakes compound fast.",
 
-    addRowReliability: 0.25,
-    matchSpacingBias: "chaotic",
-    entropyBudget: 0.68,
+    orderRobustness: 0.18,
+    convergenceDepth: 0,
+    dominantChoiceRatio: 0.18,
+    decoyDensity: 0.72,
+    initialMatchDensity: 0.37,
+    addRow: {
+      stragglerHelp: 0.35,
+      decoyDensity: 0.65,
+      dependencyDepth: 2
+    },
 
-    note: "Peak difficulty."
+    telemetry: {
+      targetTime: 210,
+      expectedAddRowUsage: [4, 5]
+    }
   },
 
   10: {
     level: 10,
-    tension: 10,
-    expectedClearance: 0.45,
-    maxStragglers: 14,
-    rescueThreshold: 3,
-    idealAddRowUsage: [4, 5],
-    relief: false,
+    experience: "Mastery. Precision required.",
 
-    addRowReliability: 0.15,
-    matchSpacingBias: "chaotic",
-    entropyBudget: 0.78,
+    orderRobustness: 0.12,
+    convergenceDepth: 0,
+    dominantChoiceRatio: 0.15,
+    decoyDensity: 0.8,
+    initialMatchDensity: 0.3,
+    addRow: {
+      stragglerHelp: 0.25,
+      decoyDensity: 0.7,
+      dependencyDepth: 3
+    },
 
-    note: "Maximum challenge."
-  },
-
-  // 🔽 SECOND RELIEF
-  11: {
-    level: 11,
-    tension: 5,
-    expectedClearance: 0.70,
-    maxStragglers: 6,
-    rescueThreshold: 1,
-    idealAddRowUsage: [2, 4],
-    relief: true,
-
-    addRowReliability: 0.75,
-    matchSpacingBias: "row",
-    entropyBudget: 0.25,
-
-    note: "Relief. Player breathes again."
+    telemetry: {
+      targetTime: 240,
+      expectedAddRowUsage: [5, 6]
+    }
   }
 };
