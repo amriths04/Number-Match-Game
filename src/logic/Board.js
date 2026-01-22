@@ -23,6 +23,14 @@ const SEED_MATCH_BUDGET =
   level <= 9 ? 3  :
   2;
 
+  const MATCH_DIRECTIONS_BY_LEVEL = (level) => {
+  if (level <= 3) return ["H"]; // training
+  if (level <= 4) return ["H", "D"]; // diagonal appears
+  if (level <= 6) return ["H", "D", "V"]; // vertical
+  if (level <= 8) return ["H", "D", "V", "WRAP_NEAR"];
+  return ["H", "D", "V", "WRAP_NEAR", "WRAP_FAR"];
+};
+
   const cfg = LEVEL_CONFIG[level] || LEVEL_CONFIG[1];
   const {
     orderRobustness,
@@ -57,7 +65,10 @@ const TARGET_DENSITY =
     level <= 2 ? 3 :
     level <= 4 ? 4 :
     level <= 6 ? 5 :
-    6;
+    level <= 8 ? 6 :
+    level <= 10 ? 7 :
+    level <= 12 ? 8 :
+    9;
 
   const board = Array.from({ length: ROWS }, () =>
     Array.from({ length: COLS }, () => null)
@@ -101,9 +112,10 @@ const MAX_MATCHES = Math.floor(
 
   let robustPairs =
   level <= 2 ? rawRobustPairs :
-  level <= 4 ? Math.min(rawRobustPairs, 4) :
-  level <= 6 ? Math.min(rawRobustPairs, 3) :
-  Math.min(rawRobustPairs, 2);
+  level === 3 ? Math.min(rawRobustPairs, 3) :
+  level === 4 ? Math.min(rawRobustPairs, 2) :
+  level <= 6 ? Math.min(rawRobustPairs, 2) :
+  1;
 
 // 🔒 HARD SEED MATCH CAP (THIS IS THE KEY)
 robustPairs = Math.min(robustPairs, SEED_MATCH_BUDGET);
@@ -114,15 +126,18 @@ robustPairs = Math.min(robustPairs, SEED_MATCH_BUDGET);
 
   while (placedPairs < robustPairs && safety++ < 400) {
     const n = rand(1, 9);
-    const r = rand(0, ROWS - 1);
-    const c = rand(0, COLS - 2);
+const r = rand(0, ROWS - 1);
+const minGap = level >= 4 ? 2 : 1;
+const c = rand(0, COLS - (minGap + 1));
 
-    if (board[r][c] || board[r][c + 1]) continue;
+if (board[r][c] || board[r][c + minGap]) continue;
 
-    const useSum10 = Math.random() < 0.75;
-    board[r][c] = n;
-    board[r][c + 1] = useSum10 ? 10 - n : n;
-    placedPairs++;
+const useSum10 = Math.random() < 0.75;
+board[r][c] = n;
+board[r][c + minGap] = useSum10 ? 10 - n : n;
+
+placedPairs++;
+
   }
 
   /* --------------------------------
@@ -143,11 +158,38 @@ const fragilePairs =
     const n = rand(1, 9);
     const r1 = rand(0, ROWS - 1);
     const c1 = rand(0, COLS - 1);
-    const r2 = rand(0, ROWS - 1);
-    const c2 = rand(0, COLS - 1);
 
-    if (board[r1][c1] || board[r2][c2]) continue;
-    if (Math.abs(r1 - r2) + Math.abs(c1 - c2) < 3) continue;
+    if (board[r1][c1]) continue;
+    const dirs = MATCH_DIRECTIONS_BY_LEVEL(level);
+const dir = pick(dirs);
+
+let r2 = r1, c2 = c1;
+
+if (dir === "D") {
+  r2 = r1 + (Math.random() < 0.5 ? 1 : -1);
+  c2 = c1 + (Math.random() < 0.5 ? 1 : -1);
+}
+else if (dir === "V") {
+  r2 = r1 + (Math.random() < 0.5 ? 2 : -2);
+}
+else if (dir === "WRAP_NEAR") {
+  c2 = (c1 + COLS - 2) % COLS;
+}
+else if (dir === "WRAP_FAR") {
+  c2 = (c1 + Math.floor(COLS / 2)) % COLS;
+}
+else {
+  const gap = level >= 6 ? 3 : 2;
+  c2 = c1 + gap;
+}
+
+
+if (
+  r2 < 0 || r2 >= ROWS ||
+  c2 < 0 || c2 >= COLS ||
+  board[r2][c2]
+) continue;
+
 
     board[r1][c1] = n;
     board[r2][c2] = n;
@@ -169,28 +211,29 @@ console.log(
   const forceAntiMatch = level >= 8;
 
   for (let r = 0; r < ROWS; r++) {
-    for (let c = 0; c < COLS; c++) {
-      if (board[r][c] != null) continue;
+  for (let c = 0; c < COLS; c++) {
+    if (board[r][c] != null) continue;
 
-      let val;
-      let attempts = 0;
+    let val;
+    let attempts = 0;
 
-      do {
-        val = pick(noisePool);
-        attempts++;
-      } while (
-        attempts < 20 &&
-        (
-          forceAntiMatch
-            ? wouldCreateImmediateMatch(board, r, c, val)
-            : Math.random() < decoyDensity &&
-              wouldCreateImmediateMatch(board, r, c, val)
-        )
-      );
+    const blockMatch =
+      forceAntiMatch ||
+      level >= 4 ||
+      Math.random() < decoyDensity;
 
-      board[r][c] = val;
-    }
+    do {
+      val = pick(noisePool);
+      attempts++;
+    } while (
+      attempts < 20 &&
+      blockMatch &&
+      wouldCreateImmediateMatch(board, r, c, val, level)
+    );
+
+    board[r][c] = val;
   }
+}
 
 if (countRemainingMatches(board) > SEED_MATCH_BUDGET * 1.5) {
   pruneExcessMatches(board, TARGET_DENSITY);
@@ -221,10 +264,11 @@ if (countRemainingMatches(board) > SEED_MATCH_BUDGET * 1.5) {
 /* --------------------------------
    Helper: avoid free dominant matches
 -------------------------------- */
-function wouldCreateImmediateMatch(board, r, c, val) {
-  const dirs = [
-    [0,1],[1,0],[0,-1],[-1,0]
-  ];
+function wouldCreateImmediateMatch(board, r, c, val, level) {
+  const dirs = level >= 4
+  ? [[0,1],[1,0],[0,-1],[-1,0],[-1,-1],[-1,1],[1,-1],[1,1]]
+  : [[0,1],[1,0],[0,-1],[-1,0]];
+
 
   for (const [dr, dc] of dirs) {
     const nr = r + dr;
