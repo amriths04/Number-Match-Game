@@ -12,7 +12,7 @@ const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 export const generateInitialBoard = (level, attempt = 0) => {
   const MAX_ATTEMPTS = 15;
 const SEED_MATCH_BUDGET =
-  level <= 1 ? 12 :
+  level <= 1 ? 20 :
   level <= 2 ? 10 :
   level <= 3 ? 8  :
   level <= 4 ? 7  :
@@ -39,7 +39,7 @@ const SEED_MATCH_BUDGET =
     initialMatchDensity = 0.4,
   } = cfg;
 const TARGET_DENSITY =
-  level <= 1 ? 1.8 :
+  level <= 1 ? 2.6 :
   level <= 2 ? 1.5 :
   level <= 3 ? 1.2 :
   level <= 4 ? 1.0 :

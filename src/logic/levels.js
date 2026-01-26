@@ -8,7 +8,7 @@ export const LEVEL_CONFIG = {
     convergenceDepth: Infinity,
     dominantChoiceRatio: 1,
     decoyDensity: 0.0,
-    initialMatchDensity: 0.8, 
+    initialMatchDensity: 0.9, 
     addRow: {
       stragglerHelp: 1.0,
       decoyDensity: 0.0,

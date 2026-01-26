@@ -26,17 +26,16 @@ const canConnectViaAddRow = (sr, sc, newRow, c, cols) => {
 --------------------------------- */
 const getRowsPerAdd = (level, addRowUsed, MAX_ADD_ROWS) => {
   let base =
-    level <= 2 ? 2 :
-    level <= 4 ? 3 :
-    level <= 6 ? 3 :
-    level === 7 ? 4 :
-    level === 8 ? 5 :
-    level === 9 ? 6 :
-    7; // level 10+
+  level <= 1 ? 4 :
+    level <= 3 ? 2 :
+    level <= 5 ? 3 :
+    level <= 7 ? 5 :
+    level <= 9 ? 6 :
+    level <= 11 ? 7 :
+    8;
 
-  // decay towards completion within the SAME level
-  const decayRatio = addRowUsed / MAX_ADD_ROWS; // 0 → 1
-  const decayFactor = 0.6; // controls how fast rows shrink
+  const decayRatio = addRowUsed / MAX_ADD_ROWS;
+  const decayFactor = 0.5;
 
   const rows = Math.ceil(base * (1 - decayRatio * decayFactor));
   return Math.max(1, rows);
@@ -128,6 +127,35 @@ export const generateAdaptiveRow = (
   const state = analyzeBoardState(board);
   const stragglers = findStragglerCells(board);
   if (!stragglers.length) return [];
+/* ---------------------------------
+   🔒 LEVEL 1: TERMINAL CONVERGENCE
+--------------------------------- */
+if (level === 1) {
+  const cols = board[0].length;
+  const newRow = Array(cols).fill(null);
+
+  for (const s of stragglers) {
+    const complement = 10 - s.val;
+    if (complement < 1 || complement > 9) continue;
+
+    if (newRow[s.col] === null) {
+      newRow[s.col] = complement;
+    } else {
+      for (let dc = 1; dc < cols; dc++) {
+        if (s.col - dc >= 0 && newRow[s.col - dc] === null) {
+          newRow[s.col - dc] = complement;
+          break;
+        }
+        if (s.col + dc < cols && newRow[s.col + dc] === null) {
+          newRow[s.col + dc] = complement;
+          break;
+        }
+      }
+    }
+  }
+
+  return [newRow];
+}
 
   /* ---------------------------------
    🟢 TERMINAL STRAGGLER RESOLUTION
@@ -271,8 +299,17 @@ break; // exit diagonal rule, NOT the function
   /* ---------------------------------
      🟣 CROWD INJECTION (CORRECT PLACE)
   --------------------------------- */
-  const crowdChance = getCrowdDensity(level);
-const realMatchChance = getRealMatchDensity(level);
+  const realMatchChance = getConvergingMatchDensity(
+  level,
+  addRowUsed,
+  MAX_ADD_ROWS
+);
+
+const crowdChance = Math.min(
+  0.6,
+  getCrowdDensity(level) + 0.1
+);
+
 
 for (const row of rowsToAdd) {
   let c = 0;
@@ -307,3 +344,30 @@ for (const row of rowsToAdd) {
 
   return rowsToAdd;
 };
+
+/* ---------------------------------
+   ADD-ROW MATCH DENSITY (NEW)
+--------------------------------- */
+const getBaseAddRowMatchDensity = (level) => {
+  if (level <= 3) return 0.45;
+  if (level <= 5) return 0.18;
+  if (level <= 7) return 0.22;
+  if (level <= 9) return 0.28;
+  if (level <= 11) return 0.32;
+  return 0.35;
+};
+
+const getConvergingMatchDensity = (
+  level,
+  addRowUsed,
+  MAX_ADD_ROWS
+) => {
+  const base = getBaseAddRowMatchDensity(level);
+
+  // convergence toward solvability
+  const convergeBoost =
+    (addRowUsed / MAX_ADD_ROWS) * 0.18;
+
+  return Math.min(0.6, base + convergeBoost);
+};
+
