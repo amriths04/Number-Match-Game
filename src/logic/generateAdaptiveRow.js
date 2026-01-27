@@ -117,8 +117,8 @@ const getRowFillTarget = (level) => {
 const getCrowdDensity = (level) => {
   if (level <= 2) return 0.02;
   if (level <= 4) return 0.08;
-  if (level <= 6) return 0.25;
-  if (level <= 8) return 0.35;
+  if (level <= 6) return 0.15;
+  if (level <= 8) return 0.25;
   return 0.45;
 };
 
@@ -375,7 +375,7 @@ for (const row of rowsToAdd) {
 const getBaseAddRowMatchDensity = (level) => {
   if (level <= 3) return 0.38;
   if (level <= 5) return 0.28;
-  if (level <= 7) return 0.22;
+  if (level <= 7) return 0.25;
   if (level <= 9) return 0.28;
   if (level <= 11) return 0.32;
   return 0.35;

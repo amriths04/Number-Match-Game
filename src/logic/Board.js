@@ -16,9 +16,9 @@ const SEED_MATCH_BUDGET =
   level <= 2 ? 10 :
   level <= 3 ? 9  :
   level <= 4 ? 9  :
-  level <= 5 ? 6  :
-  level <= 6 ? 6  :
-  level <= 7 ? 5  :
+  level <= 5 ? 7  :
+  level <= 6 ? 8  :
+  level <= 7 ? 6  :
   level <= 8 ? 4  :
   level <= 9 ? 3  :
   2;
@@ -43,10 +43,10 @@ const TARGET_DENSITY =
   level <= 2 ? 1.5 :
   level <= 3 ? 1.3 :
   level <= 4 ? 1.2 :
-  level <= 5 ? 0.8 :
-  level <= 6 ? 0.65 :
-  level <= 7 ? 0.5 :
-  level <= 8 ? 0.35 :
+  level <= 5 ? 1.0 :
+  level <= 6 ? 1.1 :
+  level <= 7 ? 0.7 :
+  level <= 8 ? 0.49 :
   level <= 9 ? 0.25 :
   0.18;
 
@@ -99,7 +99,7 @@ const MAX_MATCHES = Math.floor(
   const finalTargetPairs =
     level <= 2 ? Math.max(3, rawTargetPairs) :
     level <= 4 ? Math.min(rawTargetPairs, 10) :
-    level <= 6 ? Math.min(rawTargetPairs, 8) :
+    level <= 6 ? Math.min(rawTargetPairs, 9) :
     level <= 8 ? Math.min(rawTargetPairs, 6) :
     Math.min(rawTargetPairs, 4);
 

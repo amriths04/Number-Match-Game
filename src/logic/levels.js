@@ -88,14 +88,14 @@ export const LEVEL_CONFIG = {
     level: 5,
     experience: "Hard. Matches buried behind decoys.",
 
-    orderRobustness: 0.45,
-    convergenceDepth: 1,
-    dominantChoiceRatio: 0.4,
+    orderRobustness: 0.49,
+    convergenceDepth: 2,
+    dominantChoiceRatio: 0.49,
     decoyDensity: 0.45,
     initialMatchDensity: 0.4,
     addRow: {
       stragglerHelp: 0.65,
-      decoyDensity: 0.35,
+      decoyDensity: 0.30,
       dependencyDepth: 1
     },
 
@@ -131,7 +131,7 @@ export const LEVEL_CONFIG = {
     level: 7,
     experience: "Hard+. Optimal order exists.",
 
-    orderRobustness: 0.35,
+    orderRobustness: 0.40,
     convergenceDepth: 1,
     dominantChoiceRatio: 0.3,
     decoyDensity: 0.55,
@@ -152,7 +152,7 @@ export const LEVEL_CONFIG = {
     level: 8,
     experience: "Very Hard. Order is strict.",
 
-    orderRobustness: 0.25,
+    orderRobustness: 0.30,
     convergenceDepth: 0,
     dominantChoiceRatio: 0.25,
     decoyDensity: 0.65,
