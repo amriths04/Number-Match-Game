@@ -69,12 +69,12 @@ export const LEVEL_CONFIG = {
 
     orderRobustness: 0.69,
     convergenceDepth: 2,
-    dominantChoiceRatio: 0.55,
+    dominantChoiceRatio: 0.56,
     decoyDensity: 0.25,
-    initialMatchDensity: 0.55,
+    initialMatchDensity: 0.49,
     addRow: {
       stragglerHelp: 0.75,
-      decoyDensity: 0.25,
+      decoyDensity: 0.18,
       dependencyDepth: 1
     },
 
