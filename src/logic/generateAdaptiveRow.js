@@ -373,7 +373,7 @@ for (const row of rowsToAdd) {
    ADD-ROW MATCH DENSITY (NEW)
 --------------------------------- */
 const getBaseAddRowMatchDensity = (level) => {
-  if (level <= 3) return 0.32;
+  if (level <= 3) return 0.38;
   if (level <= 5) return 0.28;
   if (level <= 7) return 0.22;
   if (level <= 9) return 0.28;
