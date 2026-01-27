@@ -67,11 +67,11 @@ export const LEVEL_CONFIG = {
     level: 4,
     experience: "Normal+. Order starts to matter.",
 
-    orderRobustness: 0.6,
+    orderRobustness: 0.69,
     convergenceDepth: 2,
     dominantChoiceRatio: 0.55,
-    decoyDensity: 0.3,
-    initialMatchDensity: 0.5,
+    decoyDensity: 0.25,
+    initialMatchDensity: 0.55,
     addRow: {
       stragglerHelp: 0.75,
       decoyDensity: 0.25,

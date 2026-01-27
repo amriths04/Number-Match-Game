@@ -101,10 +101,22 @@ const getRealMatchDensity = (level) => {
   if (level <= 8) return 0.35;
   return 0.25; // level 9+
 };
+const getRowFillTarget = (level) => {
+  if (level <= 1) return 0.30;
+  if (level === 2) return 0.35;
+  if (level === 3) return 0.40;
+  if (level === 4) return 0.45;
+  if (level === 5) return 0.50;
+  if (level === 6) return 0.55;
+  if (level === 7) return 0.60;
+  if (level === 8) return 0.65;
+  return 0.70; // 9+
+};
+
 
 const getCrowdDensity = (level) => {
-  if (level <= 2) return 0.05;
-  if (level <= 4) return 0.15;
+  if (level <= 2) return 0.02;
+  if (level <= 4) return 0.08;
   if (level <= 6) return 0.25;
   if (level <= 8) return 0.35;
   return 0.45;
@@ -313,6 +325,8 @@ const crowdChance = Math.min(
 
 for (const row of rowsToAdd) {
   let c = 0;
+  let filled = row.filter(v => v !== null).length;
+  const maxFill = Math.floor(cols * getRowFillTarget(level));
   while (c < cols - 1) {
     if (row[c] !== null) {
       c++;
@@ -322,20 +336,30 @@ for (const row of rowsToAdd) {
     const roll = Math.random();
 
     // Helpful real match (rarer at higher levels)
-    if (roll < realMatchChance) {
-      const base = Math.floor(Math.random() * 9) + 1;
-      row[c] = base;
-      row[c + 1] = 10 - base;
-      c += 2;
-      continue;
-    }
+    if (
+  roll < realMatchChance &&
+  filled + 2 <= maxFill
+) {
+  const base = Math.floor(Math.random() * 9) + 1;
+  row[c] = base;
+  row[c + 1] = 10 - base;
+  filled += 2;
+  c += 2;
+  continue;
+}
+
 
     // Crowd / decoy
-    if (roll < realMatchChance + crowdChance) {
-      row[c] = Math.floor(Math.random() * 9) + 1;
-      c++;
-      continue;
-    }
+    if (
+  roll < realMatchChance + crowdChance &&
+  filled + 1 <= maxFill
+) {
+  row[c] = Math.floor(Math.random() * 9) + 1;
+  filled += 1;
+  c++;
+  continue;
+}
+
 
     // Leave empty
     c++;
@@ -349,8 +373,8 @@ for (const row of rowsToAdd) {
    ADD-ROW MATCH DENSITY (NEW)
 --------------------------------- */
 const getBaseAddRowMatchDensity = (level) => {
-  if (level <= 3) return 0.45;
-  if (level <= 5) return 0.18;
+  if (level <= 3) return 0.32;
+  if (level <= 5) return 0.28;
   if (level <= 7) return 0.22;
   if (level <= 9) return 0.28;
   if (level <= 11) return 0.32;
